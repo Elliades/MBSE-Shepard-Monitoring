@@ -1,0 +1,13 @@
+{
+  "name": "pasture-sentinel-test-server",
+  "version": "1.0.0",
+  "description": "WebSocket test server for Pasture Sentinel",
+  "main": "test-ws-server.js",
+  "scripts": {
+    "start": "node test-ws-server.js"
+  },
+  "dependencies": {
+    "ws": "^8.14.0"
+  }
+}
+

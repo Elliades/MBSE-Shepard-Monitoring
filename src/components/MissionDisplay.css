@@ -1,0 +1,51 @@
+.mission-display {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.mission-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.mission-description {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.mission-objectives {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.objective {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  border-left: 3px solid #4ade80;
+}
+
+.objective.pending {
+  opacity: 0.6;
+  border-left-color: rgba(255, 255, 255, 0.3);
+}
+
+.objective-icon {
+  font-weight: bold;
+  width: 20px;
+  text-align: center;
+}
+

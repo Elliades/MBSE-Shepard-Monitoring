@@ -1,0 +1,167 @@
+.control-panel {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.control-description {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 1rem;
+}
+
+.control-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.control-button {
+  padding: 0.6rem 1rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.control-button.available {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.control-button.available:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.control-button.available:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.control-button.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.control-button.disabled:hover {
+  transform: none;
+}
+
+/* WebSocket Configuration */
+.websocket-config {
+  margin-bottom: 1rem;
+}
+
+.config-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  opacity: 0.9;
+}
+
+.config-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ws-input {
+  flex: 1;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.ws-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ws-input:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.ws-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ws-button.connect {
+  background: #10b981;
+  color: white;
+}
+
+.ws-button.connect:hover {
+  background: #059669;
+}
+
+.ws-button.connect:disabled {
+  background: rgba(16, 185, 129, 0.3);
+  cursor: not-allowed;
+}
+
+.ws-button.disconnect {
+  background: #ef4444;
+  color: white;
+}
+
+.ws-button.disconnect:hover {
+  background: #dc2626;
+}
+
+.config-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.status-indicator {
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-indicator.connected {
+  color: #10b981;
+}
+
+.status-indicator.disconnected {
+  color: #f59e0b;
+}
+
+.ws-url {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  word-break: break-all;
+  font-family: 'Courier New', monospace;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 1rem 0;
+}
+

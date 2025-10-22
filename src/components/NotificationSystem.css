@@ -1,0 +1,142 @@
+.notification-system {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+  pointer-events: none;
+}
+
+.notification {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-left: 4px solid;
+  pointer-events: auto;
+  animation: notification-slide-in 0.3s ease-out;
+}
+
+.notification-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.notification-message {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+.notification-success {
+  border-left-color: #10b981;
+}
+
+.notification-success .notification-icon {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.notification-success .notification-title {
+  color: #059669;
+}
+
+.notification-success .notification-message {
+  color: #047857;
+}
+
+.notification-error {
+  border-left-color: #ef4444;
+}
+
+.notification-error .notification-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.notification-error .notification-title {
+  color: #dc2626;
+}
+
+.notification-error .notification-message {
+  color: #b91c1c;
+}
+
+.notification-warning {
+  border-left-color: #f59e0b;
+}
+
+.notification-warning .notification-icon {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.notification-warning .notification-title {
+  color: #d97706;
+}
+
+.notification-warning .notification-message {
+  color: #b45309;
+}
+
+.notification-info {
+  border-left-color: #3b82f6;
+}
+
+.notification-info .notification-icon {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.notification-info .notification-title {
+  color: #2563eb;
+}
+
+.notification-info .notification-message {
+  color: #1d4ed8;
+}
+
+@keyframes notification-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .notification-system {
+    left: 20px;
+    right: 20px;
+    max-width: none;
+  }
+}
+

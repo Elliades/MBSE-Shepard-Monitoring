@@ -1,0 +1,224 @@
+.drone-container {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 2s ease-in-out;
+}
+
+/* Drone at base station before deployment */
+.drone-container.at-base {
+  top: auto;
+  bottom: 3%;
+  left: -8px;
+  right: auto;
+  transform: translateX(0);
+}
+
+/* Deployment animation from base to field */
+@keyframes drone-deploy {
+  0% {
+    bottom: 5%;
+    left: 10%;
+    top: auto;
+    transform: translateX(0);
+  }
+  100% {
+    bottom: auto;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+.drone-state-label {
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drone-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drone-image {
+  width: 80px;
+  height: 80px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* Only rotate when deployed */
+.drone-container:not(.at-base) .drone-image {
+  animation: drone-rotate 10s linear infinite;
+}
+
+.drone-fallback {
+  display: none;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.drone-icon {
+  font-size: 40px;
+}
+
+/* Only rotate icon when deployed */
+.drone-container:not(.at-base) .drone-icon {
+  animation: drone-rotate-icon 10s linear infinite;
+}
+
+.drone-shadow {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 20px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: shadow-pulse 3s ease-in-out infinite;
+}
+
+
+@keyframes drone-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes drone-rotate-icon {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shadow-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateX(-50%) scale(1.2);
+  }
+}
+
+/* Quick animation on signal received */
+.drone-container.quick-animate .drone-wrapper {
+  animation: quick-pulse 0.5s ease-out;
+}
+
+@keyframes quick-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Flying to safe area */
+.drone-container.flying-to-safe-area {
+  animation: fly-to-center 3s ease-in-out forwards;
+}
+
+@keyframes fly-to-center {
+  0% {
+    bottom: 3%;
+    left: -8px;
+    top: auto;
+    right: auto;
+    transform: translateX(0);
+  }
+  100% {
+    bottom: auto;
+    right: auto;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* Patrolling perimeter */
+.drone-container.patrolling-perimeter {
+  animation: patrol-perimeter 20s linear infinite;
+}
+
+@keyframes patrol-perimeter {
+  0% {
+    top: 15%;
+    left: 20%;
+  }
+  25% {
+    top: 15%;
+    left: 80%;
+  }
+  50% {
+    top: 70%;
+    left: 80%;
+  }
+  75% {
+    top: 70%;
+    left: 20%;
+  }
+  100% {
+    top: 15%;
+    left: 20%;
+  }
+}
+
+/* State-specific animations */
+.drone-container.tracking .drone-wrapper {
+  animation: drone-track 2s ease-in-out infinite;
+}
+
+.drone-container.crashed .drone-wrapper {
+  animation: drone-crash 1s ease-out forwards;
+}
+
+
+@keyframes drone-track {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(20px) rotate(10deg);
+  }
+}
+
+@keyframes drone-crash {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100px) rotate(180deg);
+    opacity: 0;
+  }
+}
+

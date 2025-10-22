@@ -1,0 +1,113 @@
+.sheep {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  transition: animation 0.5s ease;
+}
+
+.sheep-image {
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.sheep-fallback {
+  display: none;
+  font-size: 32px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Wandering animations - each sheep has unique path */
+.sheep.wandering {
+  animation: var(--wander-animation, sheep-wander-1) 15s ease-in-out infinite;
+}
+
+@keyframes sheep-wander-1 {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  25% {
+    transform: translate(-50%, -50%) translate(30px, -20px) scale(1.05);
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(50px, 10px) scale(1);
+  }
+  75% {
+    transform: translate(-50%, -50%) translate(20px, 30px) scale(1.05);
+  }
+}
+
+@keyframes sheep-wander-2 {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  25% {
+    transform: translate(-50%, -50%) translate(-25px, 15px) scale(1.05);
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(-40px, -20px) scale(1);
+  }
+  75% {
+    transform: translate(-50%, -50%) translate(-15px, -35px) scale(1.05);
+  }
+}
+
+@keyframes sheep-wander-3 {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  25% {
+    transform: translate(-50%, -50%) translate(20px, 25px) scale(1.05);
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(-30px, 35px) scale(1);
+  }
+  75% {
+    transform: translate(-50%, -50%) translate(-40px, 10px) scale(1.05);
+  }
+}
+
+@keyframes sheep-wander-4 {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  25% {
+    transform: translate(-50%, -50%) translate(-35px, -25px) scale(1.05);
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(25px, -30px) scale(1);
+  }
+  75% {
+    transform: translate(-50%, -50%) translate(40px, -10px) scale(1.05);
+  }
+}
+
+@keyframes sheep-wander-5 {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  25% {
+    transform: translate(-50%, -50%) translate(15px, -35px) scale(1.05);
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(-20px, -25px) scale(1);
+  }
+  75% {
+    transform: translate(-50%, -50%) translate(30px, 20px) scale(1.05);
+  }
+}
+
+/* Sheep scattering animation when predator detected */
+.sheep.scatter {
+  animation: sheep-scatter 2s ease-out forwards !important;
+}
+
+@keyframes sheep-scatter {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.8) translateX(var(--scatter-x, 0)) translateY(var(--scatter-y, 0));
+  }
+}
+
