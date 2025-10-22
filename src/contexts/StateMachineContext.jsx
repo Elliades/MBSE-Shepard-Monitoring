@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { useMachine } from '@xstate/react'
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
+import { createActor } from 'xstate'
+import { useSelector } from '@xstate/react'
 import { pastureSentinelMachine } from '../stateMachine/pastureSentinelMachine'
 import useWebSocket from '../hooks/useWebSocket'
 
@@ -14,7 +15,26 @@ export const useStateMachine = () => {
 }
 
 export const StateMachineProvider = ({ children }) => {
-  const [state, send] = useMachine(pastureSentinelMachine)
+  // Create actor using XState 5 API
+  const actor = useMemo(() => {
+    const newActor = createActor(pastureSentinelMachine)
+    newActor.start()
+    return newActor
+  }, [])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      actor.stop()
+    }
+  }, [actor])
+
+  // Use useSelector to get state updates
+  const state = useSelector(actor, (snapshot) => snapshot)
+  const send = useCallback((event) => {
+    console.log('Sending event:', event)
+    actor.send(event)
+  }, [actor])
   const [logs, setLogs] = useState([
     { id: 1, type: 'info', message: 'System initialized', timestamp: new Date().toLocaleTimeString() }
   ])

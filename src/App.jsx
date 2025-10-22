@@ -10,6 +10,7 @@ import ControlPanel from './components/ControlPanel'
 import StatisticsPanel from './components/StatisticsPanel'
 import ActionButtons from './components/ActionButtons'
 import KeyboardHelp from './components/KeyboardHelp'
+import TestRunner from './tests/TestRunner'
 import useKeyboardShortcuts from './hooks/useKeyboardShortcuts'
 
 function AppContent() {
@@ -100,6 +101,7 @@ function AppContent() {
       
       <NotificationSystem />
       <KeyboardHelp />
+      <TestRunner />
     </div>
   )
 }
