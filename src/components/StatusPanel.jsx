@@ -10,9 +10,10 @@ const StatusPanel = () => {
   const substates = getSubstates()
 
   // Debug: Log the state
-  console.log('StatusPanel - Current state:', currentState)
-  console.log('StatusPanel - Substates:', substates)
-  console.log('StatusPanel - Full state value:', state.value)
+  console.log('🎯 StatusPanel RENDER')
+  console.log('  Current state:', currentState)
+  console.log('  Substates:', substates)
+  console.log('  Full state value:', JSON.stringify(state.value, null, 2))
 
   // Get ALL active states (parent + children)
   const getAllActiveStates = () => {

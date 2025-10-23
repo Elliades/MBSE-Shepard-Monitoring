@@ -27,7 +27,8 @@ export const StateMachineProvider = ({ children }) => {
   // Subscribe to state changes
   useEffect(() => {
     const subscription = actor.subscribe((snapshot) => {
-      console.log('State updated:', snapshot.value)
+      console.log('🔄 STATE MACHINE UPDATE:', JSON.stringify(snapshot.value, null, 2))
+      console.log('📊 Snapshot:', snapshot)
       setState(snapshot)
     })
 
@@ -76,11 +77,13 @@ export const StateMachineProvider = ({ children }) => {
 
   // Send signal to state machine
   const sendSignal = useCallback((signal) => {
-    console.log('Sending signal:', signal)
+    console.log('📤 SENDING SIGNAL:', signal)
+    console.log('📍 Current state before:', JSON.stringify(state.value, null, 2))
     send({ type: signal })
+    console.log('✅ Signal sent, waiting for state update...')
     addLog('info', `Signal received: ${signal}`)
     addNotification('info', 'Signal Received', signal)
-  }, [send, addLog, addNotification])
+  }, [send, addLog, addNotification, state.value])
 
   // WebSocket message handler
   const handleWebSocketMessage = useCallback((data) => {
@@ -151,13 +154,13 @@ export const StateMachineProvider = ({ children }) => {
       for (const [key, value] of Object.entries(obj)) {
         if (typeof value === 'string') {
           substates.push(value)
-        } else if (typeof value === 'object') {
+        } else if (typeof value === 'object' && value !== null) {
           extractSubstates(value)
         }
       }
     }
     
-    if (typeof stateValue === 'object') {
+    if (typeof stateValue === 'object' && stateValue !== null) {
       extractSubstates(stateValue)
     }
     
