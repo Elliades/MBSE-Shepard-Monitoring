@@ -58,6 +58,15 @@ export const StateMachineProvider = ({ children }) => {
 
     return () => {
       subscription.unsubscribe()
+      // DON'T stop actor here - only unsubscribe
+      // actor.stop() happens on unmount (below)
+    }
+  }, [actor])
+
+  // Stop actor only on unmount
+  useEffect(() => {
+    return () => {
+      console.log('🛑 Stopping actor on unmount')
       actor.stop()
     }
   }, [actor])
