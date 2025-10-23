@@ -158,9 +158,9 @@
   100% {
     bottom: auto;
     right: auto;
-    top: 15%;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 85%;
+    left: 20%;
+    transform: translateX(0);
   }
 }
 
@@ -171,23 +171,23 @@
 
 @keyframes patrol-perimeter {
   0% {
-    top: 15%;
+    top: 85%;
     left: 20%;
   }
   25% {
-    top: 15%;
-    left: 80%;
+    top: 12%;
+    left: 20%;
   }
   50% {
-    top: 70%;
+    top: 12%;
     left: 80%;
   }
   75% {
-    top: 70%;
-    left: 20%;
+    top: 88%;
+    left: 80%;
   }
   100% {
-    top: 15%;
+    top: 88%;
     left: 20%;
   }
 }
