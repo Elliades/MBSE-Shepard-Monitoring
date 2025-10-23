@@ -4,6 +4,9 @@
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;
+  flex: 0 1 auto;
+  transition: all 0.3s ease;
+  height: fit-content;
 }
 
 .control-panel .panel-header {
@@ -41,6 +44,16 @@
 
 .control-panel .panel-content {
   padding: 1rem;
+  max-height: 1000px;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+}
+
+.control-panel .panel-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding: 0 1rem;
 }
 
 .control-description {

@@ -4,7 +4,9 @@
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;
-  flex: 1;
+  flex: 0 1 auto; /* Don't force expansion */
+  transition: all 0.3s ease;
+  height: fit-content;
 }
 
 .panel-header {
@@ -45,6 +47,17 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  max-height: 1000px; /* Large enough for content */
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+}
+
+.status-panel.collapsed .panel-content,
+.panel-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding: 0 1rem;
 }
 
 .status-item {

@@ -10,8 +10,7 @@ const MissionDisplay = () => {
         <h3>🎯 Mission</h3>
         <span className="collapse-icon">{isCollapsed ? '▼' : '▲'}</span>
       </div>
-      {!isCollapsed && (
-      <div className="panel-content">
+      <div className={`panel-content ${isCollapsed ? 'collapsed' : ''}`}>
         <div className="mission-title">Pasture Sentinel</div>
         <div className="mission-description">
           Protect the flock by monitoring the perimeter and responding to predator threats.
@@ -35,7 +34,6 @@ const MissionDisplay = () => {
           </div>
         </div>
       </div>
-      )}
     </div>
   )
 }

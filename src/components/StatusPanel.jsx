@@ -79,8 +79,7 @@ const StatusPanel = () => {
         <h3>📊 Active States</h3>
         <span className="collapse-icon">{isCollapsed ? '▼' : '▲'}</span>
       </div>
-      {!isCollapsed && (
-      <div className="panel-content">
+      <div className={`panel-content ${isCollapsed ? 'collapsed' : ''}`}>
         <div className="status-item">
           <span className="status-label">Active States:</span>
           <div className="substates-list">
@@ -115,7 +114,6 @@ const StatusPanel = () => {
           )}
         </div>
       </div>
-      )}
     </div>
   )
 }

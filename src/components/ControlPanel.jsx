@@ -24,8 +24,7 @@ const ControlPanel = () => {
         <h3>🔧 Configuration</h3>
         <span className="collapse-icon">{isCollapsed ? '▼' : '▲'}</span>
       </div>
-      {!isCollapsed && (
-      <div className="panel-content">
+      <div className={`panel-content ${isCollapsed ? 'collapsed' : ''}`}>
         {/* WebSocket Configuration */}
         <div className="websocket-config">
           <div className="config-title">WebSocket Connection</div>
@@ -62,7 +61,6 @@ const ControlPanel = () => {
           )}
         </div>
       </div>
-      )}
     </div>
   )
 }

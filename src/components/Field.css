@@ -1,23 +1,29 @@
 .field-container {
   width: 100%;
   height: 100%;
+  min-height: 400px; /* Prevent collapse */
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  position: relative;
 }
 
 .field-background {
   position: relative;
-  width: 100%;
-  max-width: 800px;
-  height: 100%;
-  max-height: 600px;
+  width: min(100%, 800px); /* Use min() for better scaling */
+  height: 0;
+  padding-bottom: 75%; /* 4:3 aspect ratio (600/800 = 0.75) */
+  max-height: min(75vh, 600px); /* Responsive max height */
   background: linear-gradient(180deg, #a8e063 0%, #56ab2f 100%);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
+  overflow: visible; /* Allow overflow for drone animations */
   border: 4px solid rgba(255, 255, 255, 0.2);
+}
+
+.field-background > * {
+  position: absolute; /* Children need absolute positioning */
 }
 
 /* Grass texture pattern */

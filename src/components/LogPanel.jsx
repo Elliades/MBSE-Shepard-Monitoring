@@ -30,8 +30,7 @@ const LogPanel = () => {
         <h3>📋 Event Log</h3>
         <span className="collapse-icon">{isCollapsed ? '▼' : '▲'}</span>
       </div>
-      {!isCollapsed && (
-      <div className="panel-content">
+      <div className={`panel-content ${isCollapsed ? 'collapsed' : ''}`}>
         <div className="log-container" ref={logContainerRef}>
           {logs.map(log => (
             <div key={log.id} className={`log-entry log-${log.type}`}>
@@ -44,7 +43,6 @@ const LogPanel = () => {
           ))}
         </div>
       </div>
-      )}
     </div>
   )
 }
