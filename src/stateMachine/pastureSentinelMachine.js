@@ -92,10 +92,7 @@ export const pastureSentinelMachine = createMachine({
                   initial: 'Perimeter watch',
                   states: {
                     'Perimeter watch': {
-                      entry: 'logStateEntry',
-                      invoke: {
-                        src: 'perimeterMonitor'
-                      }
+                      entry: 'logStateEntry'
                     }
                   }
                 },
@@ -103,10 +100,7 @@ export const pastureSentinelMachine = createMachine({
                   initial: 'Sheep Monitoring',
                   states: {
                     'Sheep Monitoring': {
-                      entry: 'logStateEntry',
-                      invoke: {
-                        src: 'sheepMonitor'
-                      }
+                      entry: 'logStateEntry'
                     }
                   }
                 },
@@ -114,10 +108,7 @@ export const pastureSentinelMachine = createMachine({
                   initial: 'Predator Monitoring',
                   states: {
                     'Predator Monitoring': {
-                      entry: 'logStateEntry',
-                      invoke: {
-                        src: 'predatorMonitor'
-                      }
+                      entry: 'logStateEntry'
                     }
                   }
                 }
@@ -153,10 +144,7 @@ export const pastureSentinelMachine = createMachine({
           initial: 'Mission Monitoring',
           states: {
             'Mission Monitoring': {
-              entry: 'logStateEntry',
-              invoke: {
-                src: 'missionMonitor'
-              }
+              entry: 'logStateEntry'
             }
           }
         }
@@ -170,8 +158,8 @@ export const pastureSentinelMachine = createMachine({
   }
 }, {
   actions: {
-    logStateEntry: (context, event, { state }) => {
-      console.log('Entering state:', state.value)
+    logStateEntry: ({ context, event }) => {
+      console.log('Entering state - Event:', event.type)
     },
     onStartSOI: () => {
       console.log('SOI Started')
@@ -206,20 +194,7 @@ export const pastureSentinelMachine = createMachine({
     onCrashed: () => {
       console.log('System crashed')
     }
-  },
-  services: {
-    perimeterMonitor: () => () => {
-      // Perimeter monitoring service
-    },
-    sheepMonitor: () => () => {
-      // Sheep monitoring service
-    },
-    predatorMonitor: () => () => {
-      // Predator monitoring service
-    },
-    missionMonitor: () => () => {
-      // Mission monitoring service
-    }
   }
+  // Actors can be added later if needed for async operations
 })
 

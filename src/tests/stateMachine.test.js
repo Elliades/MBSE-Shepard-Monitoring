@@ -1,5 +1,5 @@
 import { createActor } from 'xstate'
-import { pastureSentinelMachine } from '../stateMachine/pastureSentinelMachine'
+import { pastureSentinelMachine } from '../stateMachine/pastureSentinelMachine.js'
 
 /**
  * Functional tests for Pasture Sentinel State Machine
@@ -157,11 +157,15 @@ export const runAllTests = () => {
     actor.send({ type: 'Start Patrolling' })
     const snapshot = logState(actor, 'After Start Patrolling')
     
-    if (snapshot.value.Deployed && snapshot.value.Deployed.Main === 'Patrolling') {
-      console.log('✅ PASS: Transitioned to Patrolling state')
+    // Patrolling has parallel regions, so Main.Patrolling is an object
+    if (snapshot.value.Deployed && 
+        snapshot.value.Deployed.Main && 
+        snapshot.value.Deployed.Main.Patrolling &&
+        snapshot.value.Deployed.Main.Patrolling.Perimeter === 'Perimeter watch') {
+      console.log('✅ PASS: Transitioned to Patrolling state with parallel regions')
       passedTests++
     } else {
-      console.error('❌ FAIL: Expected Patrolling state, got:', snapshot.value)
+      console.error('❌ FAIL: Expected Patrolling state with parallel regions, got:', snapshot.value)
       failedTests++
     }
     actor.stop()
@@ -240,5 +244,8 @@ export const runAllTests = () => {
 // Run tests if this file is executed directly
 if (typeof window !== 'undefined') {
   console.log('⚠️ To run tests, open browser console and call: runAllTests()')
+} else {
+  // Run tests in Node.js
+  runAllTests()
 }
 
