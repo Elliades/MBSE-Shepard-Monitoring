@@ -192,9 +192,9 @@
   }
 }
 
-/* Drone tracking predator - follows bear around safe zone */
+/* Drone tracking predator - follows at medium speed keeping distance */
 .drone-container.tracking-predator {
-  animation: drone-track-predator 8s ease-in-out infinite;
+  animation: drone-track-predator 22s ease-in-out infinite;
 }
 
 @keyframes drone-track-predator {
@@ -202,41 +202,65 @@
     left: 85%;
     top: 20%;
   }
-  25% {
-    left: 50%;
-    top: 12%;
+  15% {
+    left: 25%;
+    top: 50%;
   }
-  50% {
-    left: 15%;
-    top: 30%;
+  30% {
+    left: 27%;
+    top: 65%;
+  }
+  45% {
+    left: 30%;
+    top: 75%;
+  }
+  60% {
+    left: 33%;
+    top: 20%;
   }
   75% {
-    left: 20%;
-    top: 70%;
+    left: 85%;
+    top: 15%;
+  }
+  90% {
+    left: 88%;
+    top: 55%;
   }
   100% {
-    left: 70%;
-    top: 60%;
+    left: 82%;
+    top: 75%;
   }
 }
 
-/* Drone chasing predator out (counteraction mode) */
+/* Drone aggressively chasing predator out (counteraction mode) - fast and close */
 .drone-container.counteracting {
-  animation: drone-chase-predator 5s ease-in-out infinite;
+  animation: drone-chase-predator 4s linear infinite;
 }
 
 @keyframes drone-chase-predator {
   0% {
-    left: 75%;
-    top: 50%;
+    left: 35%;
+    top: 40%;
   }
-  50% {
-    left: 85%;
-    top: 60%;
+  20% {
+    left: 42%;
+    top: 48%;
+  }
+  40% {
+    left: 48%;
+    top: 52%;
+  }
+  60% {
+    left: 55%;
+    top: 58%;
+  }
+  80% {
+    left: 65%;
+    top: 65%;
   }
   100% {
-    left: 90%;
-    top: 70%;
+    left: 75%;
+    top: 72%;
   }
 }
 
