@@ -1,20 +1,26 @@
 .state-machine-panel {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
+  position: fixed;
+  bottom: 0;
+  right: 20px;
+  width: 400px;
+  background: linear-gradient(135deg, rgba(20, 20, 40, 0.98), rgba(40, 20, 60, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.2);
-  overflow: hidden;
-  flex: 0 1 auto;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
   transition: all 0.3s ease;
-  height: fit-content;
+}
+
+.state-machine-panel.minimized {
+  height: 48px;
 }
 
 .state-machine-panel .panel-header {
-  background: rgba(0, 0, 0, 0.2);
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
   user-select: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px 12px 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -25,35 +31,69 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.state-machine-panel .panel-header h3 {
-  font-size: 1rem;
+.state-machine-panel .panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 600;
-  margin: 0;
-  color: white;
+  font-size: 0.95rem;
+  color: #fff;
 }
 
-.state-machine-panel .collapse-icon {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.9rem;
+.state-machine-panel .panel-icon {
+  font-size: 1.2rem;
+}
+
+.state-machine-panel .minimize-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
   transition: all 0.2s ease;
 }
 
-.state-machine-panel .panel-header:hover .collapse-icon {
-  color: rgba(255, 255, 255, 0.9);
+.state-machine-panel .minimize-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
 }
 
 .state-machine-panel .panel-content {
   padding: 1rem;
-  max-height: 1000px;
-  opacity: 1;
-  overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  max-height: 60vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease;
 }
 
-.state-machine-panel .panel-content.collapsed {
-  max-height: 0;
-  opacity: 0;
-  padding: 0 1rem;
+.state-machine-panel .panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.state-machine-panel .panel-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.state-machine-panel .panel-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.state-machine-panel .panel-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .stm-visualization {

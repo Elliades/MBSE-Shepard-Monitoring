@@ -4,7 +4,7 @@ import './StateMachinePanel.css'
 
 const StateMachinePanel = () => {
   const { state, getMainState, getSubstates } = useStateMachine()
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(true)
   
   const mainState = getMainState()
   const substates = getSubstates()
@@ -67,12 +67,24 @@ const StateMachinePanel = () => {
   }
   
   return (
-    <div className="state-machine-panel">
-      <div className="panel-header" onClick={() => setIsCollapsed(!isCollapsed)}>
-        <h3>🔄 State Machine</h3>
-        <span className="collapse-icon">{isCollapsed ? '▼' : '▲'}</span>
+    <div className={`state-machine-panel ${isMinimized ? 'minimized' : ''}`}>
+      <div className="panel-header" onClick={() => setIsMinimized(!isMinimized)}>
+        <div className="panel-title">
+          <span className="panel-icon">🔄</span>
+          <span>State Machine</span>
+        </div>
+        <button
+          className="minimize-btn"
+          onClick={(e) => {
+            e.stopPropagation()
+            setIsMinimized(!isMinimized)
+          }}
+        >
+          {isMinimized ? '▲' : '▼'}
+        </button>
       </div>
-      <div className={`panel-content ${isCollapsed ? 'collapsed' : ''}`}>
+      {!isMinimized && (
+      <div className="panel-content">
         <div className="stm-visualization">
           {Object.entries(stateMachineDefinition).map(([stateName, stateInfo]) => {
             const isActive = activeStates.includes(stateName)
@@ -81,6 +93,7 @@ const StateMachinePanel = () => {
           })}
         </div>
       </div>
+      )}
     </div>
   )
 }

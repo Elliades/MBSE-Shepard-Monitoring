@@ -14,67 +14,49 @@ export const useStateMachine = () => {
 }
 
 export const StateMachineProvider = ({ children }) => {
-  // Create actor using XState 5 API
+  // Create actor using XState 5 API - SINGLETON PATTERN
   const actor = useMemo(() => {
+    console.log('🏭 Creating new actor instance')
     const newActor = createActor(pastureSentinelMachine)
     newActor.start()
+    console.log('✅ Actor created with ID:', newActor.id)
     return newActor
-  }, [])
+  }, []) // Empty deps - create ONCE only
 
   // Track state manually with subscription
-  const [state, setState] = useState(() => {
-    const initialSnapshot = actor.getSnapshot()
-    return {
-      value: JSON.parse(JSON.stringify(initialSnapshot.value)), // Deep clone
-      context: { ...initialSnapshot.context },
-      matches: initialSnapshot.matches.bind(initialSnapshot),
-      can: initialSnapshot.can.bind(initialSnapshot),
-      output: initialSnapshot.output,
-      tags: initialSnapshot.tags,
-      status: initialSnapshot.status
-    }
-  })
+  const [state, setState] = useState(actor.getSnapshot())
 
-  // Subscribe to state changes
+  // Subscribe to state changes - create subscription ONCE only
   useEffect(() => {
+    console.log('🔌 Setting up subscription for actor:', actor.id)
+
     const subscription = actor.subscribe((snapshot) => {
-      console.log('🔄 STATE MACHINE UPDATE:', JSON.stringify(snapshot.value, null, 2))
-      
-      // Create a NEW snapshot object to force React to detect the change
-      // CRITICAL: Deep clone value to ensure React detects nested object changes
-      const newState = {
-        value: JSON.parse(JSON.stringify(snapshot.value)), // Deep clone!
-        context: { ...snapshot.context },
-        matches: snapshot.matches.bind(snapshot),
-        can: snapshot.can.bind(snapshot),
-        output: snapshot.output,
-        tags: snapshot.tags,
-        status: snapshot.status
-      }
-      
-      console.log('🔄 Setting new state object with deep-cloned value')
-      setState(newState)
+      console.log('🔄 STATE UPDATE:', JSON.stringify(snapshot.value, null, 2))
+
+      // CRITICAL FIX: Use the snapshot directly - React will detect the change
+      setState(snapshot)
     })
 
     return () => {
+      console.log('🧹 Unsubscribing from actor:', actor.id)
       subscription.unsubscribe()
-      // DON'T stop actor here - only unsubscribe
-      // actor.stop() happens on unmount (below)
     }
-  }, [actor])
-
-  // Stop actor only on unmount
-  useEffect(() => {
-    return () => {
-      console.log('🛑 Stopping actor on unmount')
-      actor.stop()
-    }
-  }, [actor])
+  }, []) // EMPTY DEPS - create subscription ONCE only
 
   const send = useCallback((event) => {
-    console.log('Sending event:', event)
-    actor.send(event)
-  }, [actor])
+    console.log('📤 Sending event:', event)
+    console.log('   Actor status:', actor.getSnapshot().status)
+    console.log('   Actor can receive event?', actor.getSnapshot().can(event))
+
+    if (actor.getSnapshot().status === 'active') {
+      actor.send(event)
+      console.log('✅ Event sent successfully')
+    } else {
+      console.log('❌ Actor is not active, cannot send event')
+      console.log('   Status:', actor.getSnapshot().status)
+      console.log('   This suggests the actor was stopped or reached a final state')
+    }
+  }, [])
   const [logs, setLogs] = useState([
     { id: 1, type: 'info', message: 'System initialized', timestamp: new Date().toLocaleTimeString() }
   ])
@@ -112,32 +94,38 @@ export const StateMachineProvider = ({ children }) => {
   const sendSignal = useCallback((signal) => {
     console.log('📤 SENDING SIGNAL:', signal)
     console.log('📍 Current state before:', JSON.stringify(state.value, null, 2))
+    console.log('📍 Actor status:', actor.getSnapshot().status)
     send({ type: signal })
     console.log('✅ Signal sent, waiting for state update...')
     addLog('info', `Signal received: ${signal}`)
     addNotification('info', 'Signal Received', signal)
-  }, [send, addLog, addNotification, state.value])
+  }, [send, addLog, addNotification])
 
   // WebSocket message handler
   const handleWebSocketMessage = useCallback((data) => {
-    console.log('Received WebSocket signal:', data)
-    
+    console.log('📡 Received WebSocket signal:', data)
+    console.log('   Actor status:', actor.getSnapshot().status)
+
     // Expected format: { signal: "Signal Name" } or { type: "Signal Name" }
     const signal = data.signal || data.type || data
-    
-    if (signal) {
+
+    if (signal && actor.getSnapshot().status === 'active') {
+      console.log('✅ Sending WebSocket signal to active actor:', signal)
       addLog('info', `WebSocket signal: ${signal}`)
       send({ type: signal })
       addNotification('success', 'Signal Received', `Remote signal: ${signal}`)
+    } else if (actor.getSnapshot().status !== 'active') {
+      console.log('❌ WebSocket signal ignored - actor not active')
+      console.log('   Actor status:', actor.getSnapshot().status)
     }
   }, [send, addLog, addNotification])
 
   // WebSocket connection (only if URL is provided)
   const { connectionStatus, isConnected, sendMessage: wsSendMessage } = useWebSocket(
-    wsUrl, 
+    wsUrl,
     handleWebSocketMessage,
     {
-      autoConnect: !!wsUrl,
+      autoConnect: false, // ❌ DISABLE AUTO-CONNECT - connect manually only
       reconnectInterval: 3000,
       maxReconnectAttempts: 5
     }
@@ -146,11 +134,11 @@ export const StateMachineProvider = ({ children }) => {
   // Get current state path
   const getCurrentStatePath = useCallback(() => {
     const stateValue = state.value
-    
+
     if (typeof stateValue === 'string') {
       return [stateValue]
     }
-    
+
     // Handle nested states
     const extractStates = (obj, prefix = []) => {
       const states = []
@@ -165,7 +153,7 @@ export const StateMachineProvider = ({ children }) => {
       }
       return states
     }
-    
+
     return extractStates(stateValue)
   }, [state.value])
 
@@ -183,7 +171,7 @@ export const StateMachineProvider = ({ children }) => {
     console.log('🔍 getSubstates called with state.value:', JSON.stringify(state.value))
     const stateValue = state.value
     const substates = []
-    
+
     const extractSubstates = (obj) => {
       for (const [key, value] of Object.entries(obj)) {
         if (typeof value === 'string') {
@@ -193,23 +181,23 @@ export const StateMachineProvider = ({ children }) => {
         }
       }
     }
-    
+
     if (typeof stateValue === 'object' && stateValue !== null) {
       extractSubstates(stateValue)
     }
-    
+
     console.log('🔍 getSubstates returning:', substates)
     return substates
-  }, [state.value])
+  }, [state.value]) // Back to state.value - let React handle the comparison
 
   // Listen to state changes
   useEffect(() => {
     const statePath = getCurrentStatePath()
     const mainState = getMainState()
     const substates = getSubstates()
-    
+
     console.log('State changed:', { mainState, substates, fullPath: statePath })
-    
+
     // Log state changes
     if (substates.length > 0) {
       addLog('success', `State: ${mainState} → ${substates.join(', ')}`)
@@ -220,10 +208,10 @@ export const StateMachineProvider = ({ children }) => {
 
   // Update connection status in state machine context
   useEffect(() => {
-    if (connectionStatus !== state.context.connectionStatus) {
+    if (connectionStatus !== state.context?.connectionStatus) {
       // You could send an event to update the machine context if needed
     }
-  }, [connectionStatus, state.context.connectionStatus])
+  }, [connectionStatus, state.context?.connectionStatus])
 
   // Log connection status changes
   useEffect(() => {

@@ -6,17 +6,11 @@ const StatusPanel = () => {
   const { state, getMainState, getSubstates, sendSignal } = useStateMachine()
   const [isCollapsed, setIsCollapsed] = useState(false)
   
-  // Force re-render when state changes
-  // CRITICAL: JSON.stringify(state.value) to force comparison of actual values
-  useEffect(() => {
-    console.log('🔄 StatusPanel: State dependency changed, forcing update')
-    console.log('   Current state.value:', JSON.stringify(state.value))
-  }, [JSON.stringify(state.value)])
-  
   console.log('📊 StatusPanel: Calling getMainState and getSubstates')
   const currentState = getMainState()
   const substates = getSubstates()
   console.log('📊 StatusPanel: Got results:', { currentState, substates })
+  console.log('   Full state.value:', JSON.stringify(state.value))
 
   // Debug: Log the state
   console.log('🎯 StatusPanel RENDER')
