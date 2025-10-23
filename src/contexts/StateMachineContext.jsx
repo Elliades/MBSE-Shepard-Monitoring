@@ -22,7 +22,18 @@ export const StateMachineProvider = ({ children }) => {
   }, [])
 
   // Track state manually with subscription
-  const [state, setState] = useState(actor.getSnapshot())
+  const [state, setState] = useState(() => {
+    const initialSnapshot = actor.getSnapshot()
+    return {
+      value: JSON.parse(JSON.stringify(initialSnapshot.value)), // Deep clone
+      context: { ...initialSnapshot.context },
+      matches: initialSnapshot.matches.bind(initialSnapshot),
+      can: initialSnapshot.can.bind(initialSnapshot),
+      output: initialSnapshot.output,
+      tags: initialSnapshot.tags,
+      status: initialSnapshot.status
+    }
+  })
 
   // Subscribe to state changes
   useEffect(() => {
@@ -30,10 +41,10 @@ export const StateMachineProvider = ({ children }) => {
       console.log('🔄 STATE MACHINE UPDATE:', JSON.stringify(snapshot.value, null, 2))
       
       // Create a NEW snapshot object to force React to detect the change
-      // IMPORTANT: Don't spread snapshot, only copy necessary properties
+      // CRITICAL: Deep clone value to ensure React detects nested object changes
       const newState = {
-        value: snapshot.value,
-        context: snapshot.context,
+        value: JSON.parse(JSON.stringify(snapshot.value)), // Deep clone!
+        context: { ...snapshot.context },
         matches: snapshot.matches.bind(snapshot),
         can: snapshot.can.bind(snapshot),
         output: snapshot.output,
@@ -41,7 +52,7 @@ export const StateMachineProvider = ({ children }) => {
         status: snapshot.status
       }
       
-      console.log('🔄 Setting new state object')
+      console.log('🔄 Setting new state object with deep-cloned value')
       setState(newState)
     })
 
