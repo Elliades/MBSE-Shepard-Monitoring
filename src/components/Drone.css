@@ -232,35 +232,35 @@
   }
 }
 
-/* Drone aggressively chasing predator out (counteraction mode) - fast and close */
+/* Drone chasing predator inside safe zone - pursuing bear toward border */
 .drone-container.counteracting {
-  animation: drone-chase-predator 4s linear infinite;
+  animation: drone-chase-predator 13s ease-in-out infinite;
 }
 
 @keyframes drone-chase-predator {
   0% {
-    left: 35%;
+    left: 25%;
+    top: 25%;
+  }
+  30% {
+    left: 38%;
     top: 40%;
   }
-  20% {
-    left: 42%;
-    top: 48%;
-  }
-  40% {
+  50% {
     left: 48%;
-    top: 52%;
+    top: 51%;
   }
-  60% {
-    left: 55%;
+  70% {
+    left: 58%;
     top: 58%;
   }
-  80% {
-    left: 65%;
+  85% {
+    left: 68%;
     top: 65%;
   }
   100% {
-    left: 75%;
-    top: 72%;
+    left: 78%;
+    top: 73%;
   }
 }
 
