@@ -37,7 +37,10 @@ const StatusPanel = () => {
       { from: 'Ready for Mission', signal: 'Start Sheep Guard Mission', to: 'Deployed' },
       { from: 'Going to Safe Area', signal: 'Start Patrolling', to: 'Patrolling' },
       { from: 'Patrolling', signal: 'Predator Detected inside tracking perimeter', to: 'Predator Detected' },
-      { from: 'Predator tracking', signal: 'Predator Entering Safe Area', to: 'Predator Monitoring' },
+      { from: 'Perimeter watch', signal: 'Predator Detected inside tracking perimeter', to: 'Predator Detected' },
+      { from: 'Predator tracking', signal: 'Predator Entering Safe Area', to: 'Predator counteraction' },
+      { from: 'Predator counteraction', signal: 'Predator Leaving Safe Area', to: 'Predator tracking' },
+      { from: 'Predator tracking', signal: 'Predator Leaving Tracking Perimeter', to: 'Patrolling' },
       { from: 'Deployed', signal: 'Crashed Detected', to: 'Crashed' },
     ]
 

@@ -117,24 +117,30 @@ export const pastureSentinelMachine = createMachine({
             'Predator Detected': {
               initial: 'Predator tracking',
               entry: 'logStateEntry',
+              on: {
+                'Predator Leaving Tracking Perimeter': {
+                  target: 'Patrolling',
+                  actions: 'onPredatorLeavingPerimeter'
+                }
+              },
               states: {
                 'Predator tracking': {
                   entry: 'logStateEntry',
-                  after: {
-                    2000: {
-                      target: 'Predator counteraction',
-                      actions: 'onStartCounterAction'
-                    }
-                  },
                   on: {
                     'Predator Entering Safe Area': {
-                      target: '#pastureSentinel.Deployed.Main.Patrolling.Predator',
+                      target: 'Predator counteraction',
                       actions: 'onPredatorEnteringSafeArea'
                     }
                   }
                 },
                 'Predator counteraction': {
-                  entry: 'logStateEntry'
+                  entry: 'logStateEntry',
+                  on: {
+                    'Predator Leaving Safe Area': {
+                      target: 'Predator tracking',
+                      actions: 'onPredatorLeavingSafeArea'
+                    }
+                  }
                 }
               }
             }
@@ -189,7 +195,13 @@ export const pastureSentinelMachine = createMachine({
       console.log('Starting counteraction')
     },
     onPredatorEnteringSafeArea: () => {
-      console.log('Predator entering safe area')
+      console.log('Predator entering safe area - ACTIVATING COUNTERACTION')
+    },
+    onPredatorLeavingSafeArea: () => {
+      console.log('Predator leaving safe area - RETURNING TO TRACKING')
+    },
+    onPredatorLeavingPerimeter: () => {
+      console.log('Predator leaving tracking perimeter - RETURNING TO PATROL')
     },
     onCrashed: () => {
       console.log('System crashed')

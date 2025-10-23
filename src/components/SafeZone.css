@@ -1,3 +1,52 @@
+/* Tracking perimeter - outer zone */
+.tracking-perimeter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 75%;
+  height: 85%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tracking-perimeter-border {
+  width: 100%;
+  height: 100%;
+  border: 3px dashed rgba(255, 165, 0, 0.7);
+  border-radius: 25px;
+  background: rgba(255, 165, 0, 0.08);
+  animation: pulse-tracking 2s ease-in-out infinite;
+}
+
+.tracking-perimeter-label {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 165, 0, 0.95);
+  color: white;
+  padding: 0.3rem 1rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: pulse-label 2s ease-in-out infinite;
+}
+
+@keyframes pulse-tracking {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.01);
+  }
+}
+
+/* Safe zone - inner zone */
 .safe-zone {
   position: absolute;
   top: 50%;
@@ -6,6 +55,8 @@
   width: 60%;
   height: 70%;
   pointer-events: none;
+  z-index: 2;
+  transition: all 0.5s ease;
 }
 
 .safe-zone-border {
@@ -15,6 +66,44 @@
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.05);
   animation: pulse-border 3s ease-in-out infinite;
+  transition: all 0.5s ease;
+}
+
+/* Safe state - green */
+.safe-zone.safe .safe-zone-border {
+  border-color: rgba(86, 171, 47, 0.8);
+  background: rgba(86, 171, 47, 0.1);
+}
+
+.safe-zone.safe .safe-zone-label {
+  background: rgba(255, 255, 255, 0.9);
+  color: #56ab2f;
+}
+
+/* Warning state - orange (predator in tracking perimeter) */
+.safe-zone.warning .safe-zone-border {
+  border-color: rgba(255, 165, 0, 0.9);
+  background: rgba(255, 165, 0, 0.15);
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+.safe-zone.warning .safe-zone-label {
+  background: rgba(255, 165, 0, 0.95);
+  color: white;
+  animation: pulse-label 2s ease-in-out infinite;
+}
+
+/* Danger state - red (predator in safe zone) */
+.safe-zone.danger .safe-zone-border {
+  border-color: rgba(220, 38, 38, 0.95);
+  background: rgba(220, 38, 38, 0.2);
+  animation: pulse-danger 1s ease-in-out infinite;
+}
+
+.safe-zone.danger .safe-zone-label {
+  background: rgba(220, 38, 38, 0.95);
+  color: white;
+  animation: pulse-danger-label 1s ease-in-out infinite;
 }
 
 .safe-zone-label {
@@ -30,6 +119,8 @@
   font-weight: 700;
   letter-spacing: 1px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 @keyframes pulse-border {
@@ -38,6 +129,48 @@
   }
   50% {
     opacity: 1;
+  }
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+}
+
+@keyframes pulse-danger {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes pulse-label {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.05);
+  }
+}
+
+@keyframes pulse-danger-label {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.5);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.08);
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.8);
   }
 }
 

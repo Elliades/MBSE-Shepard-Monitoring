@@ -2,14 +2,17 @@ import React from 'react'
 import './Predator.css'
 
 const Predator = ({ mainState, substates }) => {
-  const isPredatorDetected = substates.includes('Predator tracking') || substates.includes('Predator counteraction')
-  const isApproaching = substates.includes('Predator counteraction')
+  const isPredatorTracking = substates.includes('Predator tracking')
+  const isPredatorCounteracting = substates.includes('Predator counteraction')
+  const isPredatorDetected = isPredatorTracking || isPredatorCounteracting
 
   let containerClass = 'predator-container'
   if (isPredatorDetected) {
     containerClass += ' visible'
-    if (isApproaching) {
-      containerClass += ' approaching'
+    if (isPredatorCounteracting) {
+      containerClass += ' in-safe-zone'
+    } else if (isPredatorTracking) {
+      containerClass += ' in-tracking-zone'
     }
   } else {
     containerClass += ' hidden'
@@ -30,6 +33,16 @@ const Predator = ({ mainState, substates }) => {
         <div className="predator-fallback">🐻</div>
         {isPredatorDetected && <div className="predator-warning">⚠️</div>}
       </div>
+      
+      {/* Drone counteraction - flashlight and sound waves */}
+      {isPredatorCounteracting && (
+        <div className="counteraction-effects">
+          <div className="flashlight-beam"></div>
+          <div className="sound-wave wave-1">〰️</div>
+          <div className="sound-wave wave-2">〰️</div>
+          <div className="sound-wave wave-3">〰️</div>
+        </div>
+      )}
     </div>
   )
 }
