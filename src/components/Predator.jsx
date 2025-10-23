@@ -33,16 +33,6 @@ const Predator = ({ mainState, substates }) => {
         <div className="predator-fallback">🐻</div>
         {isPredatorDetected && <div className="predator-warning">⚠️</div>}
       </div>
-      
-      {/* Drone counteraction - flashlight and sound waves */}
-      {isPredatorCounteracting && (
-        <div className="counteraction-effects">
-          <div className="flashlight-beam"></div>
-          <div className="sound-wave wave-1">〰️</div>
-          <div className="sound-wave wave-2">〰️</div>
-          <div className="sound-wave wave-3">〰️</div>
-        </div>
-      )}
     </div>
   )
 }

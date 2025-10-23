@@ -69,10 +69,10 @@
   transition: all 0.5s ease;
 }
 
-/* Safe state - green */
+/* Safe state - white (default) */
 .safe-zone.safe .safe-zone-border {
-  border-color: rgba(86, 171, 47, 0.8);
-  background: rgba(86, 171, 47, 0.1);
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .safe-zone.safe .safe-zone-label {

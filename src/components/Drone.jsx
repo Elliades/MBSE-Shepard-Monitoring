@@ -14,7 +14,9 @@ const Drone = ({ mainState, substates }) => {
   const isPatrolling = substates.includes('Patrolling')
   const isPerimeterWatch = substates.includes('Perimeter watch')
   const isGoingToSafeArea = substates.includes('Going to Safe Area')
-  const isTracking = substates.includes('Predator tracking') || substates.includes('Predator counteraction')
+  const isPredatorTracking = substates.includes('Predator tracking')
+  const isPredatorCounteracting = substates.includes('Predator counteraction')
+  const isTracking = isPredatorTracking || isPredatorCounteracting
   const isCrashed = mainState === 'Crashed'
   const isUnconfigured = substates.includes('Unconfigured')
   const isConfigured = substates.includes('Configured')
@@ -26,10 +28,12 @@ const Drone = ({ mainState, substates }) => {
     stateClass = 'crashed'
   } else if (isGoingToSafeArea) {
     stateClass = 'flying-to-safe-area'
+  } else if (isPredatorCounteracting) {
+    stateClass = 'counteracting'
+  } else if (isPredatorTracking) {
+    stateClass = 'tracking-predator'
   } else if (isPerimeterWatch) {
     stateClass = 'patrolling-perimeter'
-  } else if (isTracking) {
-    stateClass = 'tracking'
   }
 
   // Choose drone image based on state
@@ -92,6 +96,16 @@ const Drone = ({ mainState, substates }) => {
         {isDeployed && <div className="drone-shadow"></div>}
       </div>
       <div className="drone-state-label">{stateDisplay}</div>
+      
+      {/* Counteraction effects when chasing predator */}
+      {isPredatorCounteracting && (
+        <div className="drone-counteraction-effects">
+          <div className="drone-flashlight-beam"></div>
+          <div className="drone-sound-wave wave-1">〰️</div>
+          <div className="drone-sound-wave wave-2">〰️</div>
+          <div className="drone-sound-wave wave-3">〰️</div>
+        </div>
+      )}
     </div>
   )
 }

@@ -192,23 +192,57 @@
   }
 }
 
-/* State-specific animations */
-.drone-container.tracking .drone-wrapper {
-  animation: drone-track 2s ease-in-out infinite;
+/* Drone tracking predator - follows bear around safe zone */
+.drone-container.tracking-predator {
+  animation: drone-track-predator 8s ease-in-out infinite;
 }
 
-.drone-container.crashed .drone-wrapper {
-  animation: drone-crash 1s ease-out forwards;
-}
-
-
-@keyframes drone-track {
-  0%, 100% {
-    transform: translateX(0) rotate(0deg);
+@keyframes drone-track-predator {
+  0% {
+    left: 85%;
+    top: 20%;
+  }
+  25% {
+    left: 50%;
+    top: 12%;
   }
   50% {
-    transform: translateX(20px) rotate(10deg);
+    left: 15%;
+    top: 30%;
   }
+  75% {
+    left: 20%;
+    top: 70%;
+  }
+  100% {
+    left: 70%;
+    top: 60%;
+  }
+}
+
+/* Drone chasing predator out (counteraction mode) */
+.drone-container.counteracting {
+  animation: drone-chase-predator 5s ease-in-out infinite;
+}
+
+@keyframes drone-chase-predator {
+  0% {
+    left: 75%;
+    top: 50%;
+  }
+  50% {
+    left: 85%;
+    top: 60%;
+  }
+  100% {
+    left: 90%;
+    top: 70%;
+  }
+}
+
+/* State-specific animations */
+.drone-container.crashed .drone-wrapper {
+  animation: drone-crash 1s ease-out forwards;
 }
 
 @keyframes drone-crash {
@@ -219,6 +253,84 @@
   100% {
     transform: translateY(100px) rotate(180deg);
     opacity: 0;
+  }
+}
+
+/* Drone counteraction effects */
+.drone-counteraction-effects {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 12;
+}
+
+/* Flashlight beam from drone */
+.drone-flashlight-beam {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  top: 20px;
+  left: -75px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 100, 0.5) 0%,
+    rgba(255, 255, 100, 0.3) 30%,
+    transparent 70%
+  );
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  animation: drone-flashlight-pulse 0.4s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+@keyframes drone-flashlight-pulse {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Sound waves from drone */
+.drone-sound-wave {
+  position: absolute;
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  animation: drone-sound-wave-emit 1.5s ease-out infinite;
+}
+
+.drone-sound-wave.wave-1 {
+  top: 40px;
+  left: -20px;
+  animation-delay: 0s;
+}
+
+.drone-sound-wave.wave-2 {
+  top: 50px;
+  left: 5px;
+  animation-delay: 0.25s;
+}
+
+.drone-sound-wave.wave-3 {
+  top: 45px;
+  left: -5px;
+  animation-delay: 0.5s;
+}
+
+@keyframes drone-sound-wave-emit {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.4) translateY(15px);
   }
 }
 
