@@ -7,10 +7,8 @@ import LogPanel from './components/LogPanel'
 import MissionDisplay from './components/MissionDisplay'
 import NotificationSystem from './components/NotificationSystem'
 import ControlPanel from './components/ControlPanel'
-import StatisticsPanel from './components/StatisticsPanel'
-import ActionButtons from './components/ActionButtons'
 import KeyboardHelp from './components/KeyboardHelp'
-import TestRunner from './tests/TestRunner'
+import TestPanel from './components/TestPanel'
 import useKeyboardShortcuts from './hooks/useKeyboardShortcuts'
 
 function AppContent() {
@@ -101,7 +99,7 @@ function AppContent() {
       
       <NotificationSystem />
       <KeyboardHelp />
-      <TestRunner />
+      <TestPanel />
     </div>
   )
 }
