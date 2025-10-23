@@ -6,17 +6,8 @@ const StatusPanel = () => {
   const { state, getMainState, getSubstates, sendSignal } = useStateMachine()
   const [isCollapsed, setIsCollapsed] = useState(false)
   
-  console.log('📊 StatusPanel: Calling getMainState and getSubstates')
   const currentState = getMainState()
   const substates = getSubstates()
-  console.log('📊 StatusPanel: Got results:', { currentState, substates })
-  console.log('   Full state.value:', JSON.stringify(state.value))
-
-  // Debug: Log the state
-  console.log('🎯 StatusPanel RENDER')
-  console.log('  Current state:', currentState)
-  console.log('  Substates:', substates)
-  console.log('  Full state value:', JSON.stringify(state.value, null, 2))
 
   // Get ALL active states (parent + children)
   const getAllActiveStates = () => {

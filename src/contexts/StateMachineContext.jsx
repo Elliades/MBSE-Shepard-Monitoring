@@ -16,10 +16,8 @@ export const useStateMachine = () => {
 export const StateMachineProvider = ({ children }) => {
   // Create actor using XState 5 API - SINGLETON PATTERN
   const actor = useMemo(() => {
-    console.log('🏭 Creating new actor instance')
     const newActor = createActor(pastureSentinelMachine)
     newActor.start()
-    console.log('✅ Actor created with ID:', newActor.id)
     return newActor
   }, []) // Empty deps - create ONCE only
 
@@ -28,17 +26,12 @@ export const StateMachineProvider = ({ children }) => {
 
   // Subscribe to state changes - create subscription ONCE only
   useEffect(() => {
-    console.log('🔌 Setting up subscription for actor:', actor.id)
-
     const subscription = actor.subscribe((snapshot) => {
       console.log('🔄 STATE UPDATE:', JSON.stringify(snapshot.value, null, 2))
-
-      // CRITICAL FIX: Use the snapshot directly - React will detect the change
       setState(snapshot)
     })
 
     return () => {
-      console.log('🧹 Unsubscribing from actor:', actor.id)
       subscription.unsubscribe()
     }
   }, []) // EMPTY DEPS - create subscription ONCE only
@@ -46,7 +39,6 @@ export const StateMachineProvider = ({ children }) => {
   const send = useCallback((event) => {
     console.log('📤 Sending event:', event)
     console.log('   Actor status:', actor.getSnapshot().status)
-    console.log('   Actor can receive event?', actor.getSnapshot().can(event))
 
     if (actor.getSnapshot().status === 'active') {
       actor.send(event)
@@ -54,7 +46,6 @@ export const StateMachineProvider = ({ children }) => {
     } else {
       console.log('❌ Actor is not active, cannot send event')
       console.log('   Status:', actor.getSnapshot().status)
-      console.log('   This suggests the actor was stopped or reached a final state')
     }
   }, [])
   const [logs, setLogs] = useState([
@@ -94,9 +85,7 @@ export const StateMachineProvider = ({ children }) => {
   const sendSignal = useCallback((signal) => {
     console.log('📤 SENDING SIGNAL:', signal)
     console.log('📍 Current state before:', JSON.stringify(state.value, null, 2))
-    console.log('📍 Actor status:', actor.getSnapshot().status)
     send({ type: signal })
-    console.log('✅ Signal sent, waiting for state update...')
     addLog('info', `Signal received: ${signal}`)
     addNotification('info', 'Signal Received', signal)
   }, [send, addLog, addNotification])
@@ -168,7 +157,6 @@ export const StateMachineProvider = ({ children }) => {
 
   // Get substates
   const getSubstates = useCallback(() => {
-    console.log('🔍 getSubstates called with state.value:', JSON.stringify(state.value))
     const stateValue = state.value
     const substates = []
 
@@ -186,17 +174,14 @@ export const StateMachineProvider = ({ children }) => {
       extractSubstates(stateValue)
     }
 
-    console.log('🔍 getSubstates returning:', substates)
     return substates
-  }, [state.value]) // Back to state.value - let React handle the comparison
+  }, [state.value])
 
   // Listen to state changes
   useEffect(() => {
     const statePath = getCurrentStatePath()
     const mainState = getMainState()
     const substates = getSubstates()
-
-    console.log('State changed:', { mainState, substates, fullPath: statePath })
 
     // Log state changes
     if (substates.length > 0) {
