@@ -28,13 +28,17 @@ export const StateMachineProvider = ({ children }) => {
   useEffect(() => {
     const subscription = actor.subscribe((snapshot) => {
       console.log('🔄 STATE MACHINE UPDATE:', JSON.stringify(snapshot.value, null, 2))
-      console.log('📊 Snapshot:', snapshot)
       
-      // Create a new object to force React to detect the change
+      // Create a NEW snapshot object to force React to detect the change
+      // IMPORTANT: Don't spread snapshot, only copy necessary properties
       const newState = {
-        ...snapshot,
         value: snapshot.value,
-        context: snapshot.context
+        context: snapshot.context,
+        matches: snapshot.matches.bind(snapshot),
+        can: snapshot.can.bind(snapshot),
+        output: snapshot.output,
+        tags: snapshot.tags,
+        status: snapshot.status
       }
       
       console.log('🔄 Setting new state object')
