@@ -35,10 +35,8 @@ export const StateMachineProvider = ({ children }) => {
     }
   })
 
-  // Subscribe to state changes - create subscription ONCE
+  // Subscribe to state changes
   useEffect(() => {
-    console.log('🔌 Setting up subscription')
-    
     const subscription = actor.subscribe((snapshot) => {
       console.log('🔄 STATE MACHINE UPDATE:', JSON.stringify(snapshot.value, null, 2))
       
@@ -59,10 +57,11 @@ export const StateMachineProvider = ({ children }) => {
     })
 
     return () => {
-      console.log('🔌 Unsubscribing')
       subscription.unsubscribe()
+      // DON'T stop actor here - only unsubscribe
+      // actor.stop() happens on unmount (below)
     }
-  }, []) // EMPTY DEPS - create subscription ONCE only
+  }, [actor])
 
   // Stop actor only on unmount
   useEffect(() => {
@@ -181,6 +180,7 @@ export const StateMachineProvider = ({ children }) => {
 
   // Get substates
   const getSubstates = useCallback(() => {
+    console.log('🔍 getSubstates called with state.value:', JSON.stringify(state.value))
     const stateValue = state.value
     const substates = []
     
@@ -198,6 +198,7 @@ export const StateMachineProvider = ({ children }) => {
       extractSubstates(stateValue)
     }
     
+    console.log('🔍 getSubstates returning:', substates)
     return substates
   }, [state.value])
 

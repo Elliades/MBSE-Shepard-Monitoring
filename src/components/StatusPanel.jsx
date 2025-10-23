@@ -13,8 +13,10 @@ const StatusPanel = () => {
     console.log('   Current state.value:', JSON.stringify(state.value))
   }, [JSON.stringify(state.value)])
   
+  console.log('📊 StatusPanel: Calling getMainState and getSubstates')
   const currentState = getMainState()
   const substates = getSubstates()
+  console.log('📊 StatusPanel: Got results:', { currentState, substates })
 
   // Debug: Log the state
   console.log('🎯 StatusPanel RENDER')

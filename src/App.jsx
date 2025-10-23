@@ -9,7 +9,6 @@ import NotificationSystem from './components/NotificationSystem'
 import ControlPanel from './components/ControlPanel'
 import KeyboardHelp from './components/KeyboardHelp'
 import TestPanel from './components/TestPanel'
-import STMPanel from './components/STMPanel'
 import useKeyboardShortcuts from './hooks/useKeyboardShortcuts'
 
 function AppContent() {
@@ -85,7 +84,6 @@ function AppContent() {
       <div className="app-container">
         <div className="left-panel">
           <MissionDisplay />
-          <STMPanel />
           <StatusPanel />
           <ControlPanel />
         </div>
