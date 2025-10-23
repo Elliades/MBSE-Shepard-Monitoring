@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useStateMachine } from '../contexts/StateMachineContext'
 import './StatusPanel.css'
 
 const StatusPanel = () => {
   const { state, getMainState, getSubstates, sendSignal } = useStateMachine()
+  const [isCollapsed, setIsCollapsed] = useState(false)
   
   const currentState = getMainState()
   const substates = getSubstates()
@@ -65,9 +66,11 @@ const StatusPanel = () => {
 
   return (
     <div className="status-panel">
-      <div className="panel-header">
+      <div className="panel-header" onClick={() => setIsCollapsed(!isCollapsed)}>
         <h3>📊 Active States</h3>
+        <span className="collapse-icon">{isCollapsed ? '▼' : '▲'}</span>
       </div>
+      {!isCollapsed && (
       <div className="panel-content">
         <div className="status-item">
           <span className="status-label">Active States:</span>
@@ -103,6 +106,7 @@ const StatusPanel = () => {
           )}
         </div>
       </div>
+      )}
     </div>
   )
 }

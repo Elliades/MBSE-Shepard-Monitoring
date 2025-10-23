@@ -7,6 +7,43 @@
   flex: 0 0 auto;
 }
 
+.mission-display .panel-header {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s ease;
+}
+
+.mission-display .panel-header:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mission-display .panel-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+.mission-display .collapse-icon {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.mission-display .panel-header:hover .collapse-icon {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.mission-display .panel-content {
+  padding: 1rem;
+}
+
 .mission-title {
   font-size: 1.1rem;
   font-weight: 700;

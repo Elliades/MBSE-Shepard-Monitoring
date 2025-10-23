@@ -1,12 +1,16 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './MissionDisplay.css'
 
 const MissionDisplay = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
   return (
     <div className="mission-display">
-      <div className="panel-header">
+      <div className="panel-header" onClick={() => setIsCollapsed(!isCollapsed)}>
         <h3>🎯 Mission</h3>
+        <span className="collapse-icon">{isCollapsed ? '▼' : '▲'}</span>
       </div>
+      {!isCollapsed && (
       <div className="panel-content">
         <div className="mission-title">Pasture Sentinel</div>
         <div className="mission-description">
@@ -31,6 +35,7 @@ const MissionDisplay = () => {
           </div>
         </div>
       </div>
+      )}
     </div>
   )
 }

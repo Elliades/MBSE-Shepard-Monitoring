@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import { createActor } from 'xstate'
-import { useSelector } from '@xstate/react'
 import { pastureSentinelMachine } from '../stateMachine/pastureSentinelMachine'
 import useWebSocket from '../hooks/useWebSocket'
 
@@ -22,15 +21,22 @@ export const StateMachineProvider = ({ children }) => {
     return newActor
   }, [])
 
-  // Cleanup on unmount
+  // Track state manually with subscription
+  const [state, setState] = useState(actor.getSnapshot())
+
+  // Subscribe to state changes
   useEffect(() => {
+    const subscription = actor.subscribe((snapshot) => {
+      console.log('State updated:', snapshot.value)
+      setState(snapshot)
+    })
+
     return () => {
+      subscription.unsubscribe()
       actor.stop()
     }
   }, [actor])
 
-  // Use useSelector to get state updates
-  const state = useSelector(actor, (snapshot) => snapshot)
   const send = useCallback((event) => {
     console.log('Sending event:', event)
     actor.send(event)

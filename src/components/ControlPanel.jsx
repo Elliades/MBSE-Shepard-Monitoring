@@ -5,6 +5,7 @@ import './ControlPanel.css'
 const ControlPanel = () => {
   const { wsUrl, setWsUrl, isConnected } = useStateMachine()
   const [inputUrl, setInputUrl] = useState('')
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   const handleConnectWebSocket = () => {
     if (inputUrl) {
@@ -19,9 +20,11 @@ const ControlPanel = () => {
 
   return (
     <div className="control-panel">
-      <div className="panel-header">
+      <div className="panel-header" onClick={() => setIsCollapsed(!isCollapsed)}>
         <h3>🔧 Configuration</h3>
+        <span className="collapse-icon">{isCollapsed ? '▼' : '▲'}</span>
       </div>
+      {!isCollapsed && (
       <div className="panel-content">
         {/* WebSocket Configuration */}
         <div className="websocket-config">
@@ -59,6 +62,7 @@ const ControlPanel = () => {
           )}
         </div>
       </div>
+      )}
     </div>
   )
 }
