@@ -29,7 +29,16 @@ export const StateMachineProvider = ({ children }) => {
     const subscription = actor.subscribe((snapshot) => {
       console.log('🔄 STATE MACHINE UPDATE:', JSON.stringify(snapshot.value, null, 2))
       console.log('📊 Snapshot:', snapshot)
-      setState(snapshot)
+      
+      // Create a new object to force React to detect the change
+      const newState = {
+        ...snapshot,
+        value: snapshot.value,
+        context: snapshot.context
+      }
+      
+      console.log('🔄 Setting new state object')
+      setState(newState)
     })
 
     return () => {

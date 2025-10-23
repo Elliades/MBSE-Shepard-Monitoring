@@ -5,6 +5,11 @@ const Drone = ({ mainState, substates }) => {
   const [animationTrigger, setAnimationTrigger] = useState(0)
   const [sheepInCircle, setSheepInCircle] = useState(false)
   
+  // Debug: Log when Drone receives new props
+  useEffect(() => {
+    console.log('🚁 Drone: Props updated', { mainState, substates })
+  }, [mainState, substates])
+  
   const isDeployed = mainState === 'Deployed'
   const isPatrolling = substates.includes('Patrolling')
   const isPerimeterWatch = substates.includes('Perimeter watch')

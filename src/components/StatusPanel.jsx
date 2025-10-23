@@ -1,10 +1,18 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useStateMachine } from '../contexts/StateMachineContext'
 import './StatusPanel.css'
 
 const StatusPanel = () => {
   const { state, getMainState, getSubstates, sendSignal } = useStateMachine()
   const [isCollapsed, setIsCollapsed] = useState(false)
+  
+  // Force re-render when state changes
+  const [, forceUpdate] = useState({})
+  
+  useEffect(() => {
+    console.log('🔄 StatusPanel: State dependency changed, forcing update')
+    forceUpdate({})
+  }, [state.value])
   
   const currentState = getMainState()
   const substates = getSubstates()
