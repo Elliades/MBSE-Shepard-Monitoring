@@ -109,10 +109,21 @@ The application implements the state machine defined in `state_machine.md`:
 - **CSS3**: Styling with animations
 - **WebSocket**: Real-time communication
 
+### OMF plugin (simulation bridge)
+
+The MagicDraw / Cameo plugin sources live in [`OMF_Private/`](OMF_Private/) as a Git submodule ([Open MBSE Framework](https://github.com/OMF-Open-MBSE-Framework/OMF)). After cloning this repository, run:
+
+```bash
+git submodule update --init --recursive
+```
+
+Simulation signal interception (`SimulationExecutionListener`, WebSocket publisher) is implemented in that tree, not in the React app. Launch MagicDraw from `OMF_Private` with Gradle `:omf-example-plugin:runPlugin` when a local MCSE/CST install is configured.
+
 ### Project Structure
 
 ```
 mbse-sheppard/
+├── OMF_Private/             # OMF plugin submodule (MagicDraw / CST)
 ├── src/
 │   ├── components/          # React components
 │   │   ├── Drone.jsx       # Drone visualization

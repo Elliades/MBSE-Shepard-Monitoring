@@ -1,0 +1,3 @@
+[submodule "OMF_Private"]
+	path = OMF_Private
+	url = https://github.com/OMF-Open-MBSE-Framework/OMF
