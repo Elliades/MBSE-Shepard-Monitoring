@@ -1,0 +1,25 @@
+{
+  "name": "Pasture Sentinel + OMF",
+  "install": "npm install && git submodule update --init --recursive",
+  "repositoryDependencies": [
+    "github.com/Elliades/MBSE-Shepard-Monitoring",
+    "github.com/OMF-Open-MBSE-Framework/OMF"
+  ],
+  "terminals": [
+    {
+      "name": "monitoring",
+      "command": "npm run dev -- --host 127.0.0.1 --port 3000",
+      "description": "Pasture Sentinel Vite dev server"
+    }
+  ],
+  "ports": [
+    {
+      "name": "monitoring",
+      "port": 3000
+    },
+    {
+      "name": "simulation-signals",
+      "port": 8080
+    }
+  ]
+}
