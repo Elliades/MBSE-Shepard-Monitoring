@@ -117,6 +117,16 @@ The MagicDraw / Cameo plugin sources live in [`OMF_Private/`](OMF_Private/) as a
 git submodule update --init --recursive
 ```
 
+**Sandbox ISAE** — dépôt de travail pour les changements plugin (listener ALH, WebSocket) : `git@github.com:Elliades/OMF-Sandbox.git`. Le sous-module pointe encore sur le framework public ; pour publier votre branche locale vers le sandbox :
+
+```bash
+cd OMF_Private
+git remote add sandbox git@github.com:Elliades/OMF-Sandbox.git  # une seule fois
+git push -u sandbox HEAD:main
+```
+
+Pour faire pointer le monorepo monitoring vers le sandbox une fois le dépôt rempli, mettez à jour [`.gitmodules`](.gitmodules) (`url = https://github.com/Elliades/OMF-Sandbox.git`) puis `git submodule sync && git submodule update --init --recursive`.
+
 Simulation signal interception (`SimulationExecutionListener`, WebSocket publisher) is implemented in that tree, not in the React app. Launch MagicDraw from `OMF_Private` with Gradle `:omf-example-plugin:runPlugin` when a local MCSE/CST install is configured.
 
 ### Project Structure
