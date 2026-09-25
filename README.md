@@ -111,21 +111,21 @@ The application implements the state machine defined in `state_machine.md`:
 
 ### OMF plugin (simulation bridge)
 
-The MagicDraw / Cameo plugin sources live in [`OMF_Private/`](OMF_Private/) as a Git submodule ([Open MBSE Framework](https://github.com/OMF-Open-MBSE-Framework/OMF)). After cloning this repository, run:
+The MagicDraw / Cameo plugin sources live in [`OMF_Private/`](OMF_Private/) as a Git submodule ([Elliades/OMF-Sandbox](https://github.com/Elliades/OMF-Sandbox)). After cloning this repository, run:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-**Sandbox ISAE** — dépôt de travail pour les changements plugin (listener ALH, WebSocket) : `git@github.com:Elliades/OMF-Sandbox.git`. Le sous-module pointe encore sur le framework public ; pour publier votre branche locale vers le sandbox :
+Le POC signaux (branche `feature/pasture-sentinel-alh-poc`) doit être **poussé sur OMF-Sandbox** pour apparaître sur GitHub :
 
 ```bash
 cd OMF_Private
-git remote add sandbox git@github.com:Elliades/OMF-Sandbox.git  # une seule fois
-git push -u sandbox HEAD:main
+git push -u sandbox feature/pasture-sentinel-alh-poc:main
+# remote sandbox = git@github.com:Elliades/OMF-Sandbox.git
 ```
 
-Pour faire pointer le monorepo monitoring vers le sandbox une fois le dépôt rempli, mettez à jour [`.gitmodules`](.gitmodules) (`url = https://github.com/Elliades/OMF-Sandbox.git`) puis `git submodule sync && git submodule update --init --recursive`.
+Si le dépôt sandbox est vide ou privé sans accès, `git submodule update` échouera tant que `main` ne contient pas le commit référencé par le monitoring.
 
 Simulation signal interception (`SimulationExecutionListener`, WebSocket publisher) is implemented in that tree, not in the React app. POC branch **`feature/pasture-sentinel-alh-poc`** (package `features/pasturesentinel`) : listener passif + WebSocket `ws://127.0.0.1:8080`, messages `{"signal":"<nom>"}`. Voir `OMF_Private/omf-example-plugin/.../pasturesentinel/README.md`.
 
