@@ -3,18 +3,18 @@ import { useStateMachine } from '../contexts/StateMachineContext'
 import './ControlPanel.css'
 
 const ControlPanel = () => {
-  const { wsUrl, setWsUrl, isConnected } = useStateMachine()
+  const { wsUrl, isConnected, connectWebSocket, disconnectWebSocket } = useStateMachine()
   const [inputUrl, setInputUrl] = useState('')
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   const handleConnectWebSocket = () => {
-    if (inputUrl) {
-      setWsUrl(inputUrl)
+    if (inputUrl.trim()) {
+      connectWebSocket(inputUrl.trim())
     }
   }
 
   const handleDisconnectWebSocket = () => {
-    setWsUrl('')
+    disconnectWebSocket()
     setInputUrl('')
   }
 

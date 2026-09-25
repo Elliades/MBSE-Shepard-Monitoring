@@ -10,13 +10,44 @@ const useWebSocket = (url, onMessage, options = {}) => {
   const wsRef = useRef(null)
   const reconnectTimeoutRef = useRef(null)
   const reconnectAttemptsRef = useRef(0)
+  const urlRef = useRef(url)
+  const onMessageRef = useRef(onMessage)
   const [connectionStatus, setConnectionStatus] = useState('disconnected')
 
-  const connect = useCallback(() => {
+  useEffect(() => {
+    urlRef.current = url
+  }, [url])
+
+  useEffect(() => {
+    onMessageRef.current = onMessage
+  }, [onMessage])
+
+  const connect = useCallback((urlOverride) => {
+    const target = (urlOverride ?? urlRef.current)?.trim()
+    if (!target) {
+      console.warn('WebSocket URL is empty. Cannot connect.')
+      setConnectionStatus('error')
+      return
+    }
+
+    urlRef.current = target
+    reconnectAttemptsRef.current = 0
+
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current)
+      reconnectTimeoutRef.current = null
+    }
+
+    if (wsRef.current) {
+      wsRef.current.manualClose = true
+      wsRef.current.close()
+      wsRef.current = null
+    }
+
     try {
-      console.log('Attempting to connect to WebSocket:', url)
-      const ws = new WebSocket(url)
-      
+      console.log('Attempting to connect to WebSocket:', target)
+      const ws = new WebSocket(target)
+
       ws.onopen = () => {
         console.log('WebSocket connected')
         setConnectionStatus('connected')
@@ -27,8 +58,8 @@ const useWebSocket = (url, onMessage, options = {}) => {
         try {
           const data = JSON.parse(event.data)
           console.log('WebSocket message received:', data)
-          if (onMessage) {
-            onMessage(data)
+          if (onMessageRef.current) {
+            onMessageRef.current(data)
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error)
@@ -42,15 +73,20 @@ const useWebSocket = (url, onMessage, options = {}) => {
 
       ws.onclose = () => {
         console.log('WebSocket disconnected')
-        setConnectionStatus('disconnected')
-        wsRef.current = null
+        if (wsRef.current === ws) {
+          wsRef.current = null
+        }
+        if (ws.manualClose) {
+          setConnectionStatus('disconnected')
+          return
+        }
 
-        // Attempt to reconnect
-        if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+        setConnectionStatus('disconnected')
+        if (reconnectAttemptsRef.current < maxReconnectAttempts && urlRef.current) {
           reconnectAttemptsRef.current += 1
           console.log(`Reconnecting... Attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts}`)
           reconnectTimeoutRef.current = setTimeout(() => {
-            connect()
+            connect(urlRef.current)
           }, reconnectInterval)
         } else {
           console.log('Max reconnection attempts reached')
@@ -62,18 +98,21 @@ const useWebSocket = (url, onMessage, options = {}) => {
       console.error('Error creating WebSocket connection:', error)
       setConnectionStatus('error')
     }
-  }, [url, onMessage, reconnectInterval, maxReconnectAttempts])
+  }, [reconnectInterval, maxReconnectAttempts])
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current)
+      reconnectTimeoutRef.current = null
     }
+    reconnectAttemptsRef.current = maxReconnectAttempts
     if (wsRef.current) {
+      wsRef.current.manualClose = true
       wsRef.current.close()
       wsRef.current = null
     }
     setConnectionStatus('disconnected')
-  }, [])
+  }, [maxReconnectAttempts])
 
   const sendMessage = useCallback((data) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
