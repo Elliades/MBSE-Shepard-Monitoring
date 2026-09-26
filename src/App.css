@@ -1,6 +1,7 @@
 .app {
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -49,24 +50,6 @@
 .left-panel {
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-.left-panel::-webkit-scrollbar {
-  width: 8px;
-}
-
-.left-panel::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-}
-
-.left-panel::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-}
-
-.left-panel::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
 }
 
 .main-content {
