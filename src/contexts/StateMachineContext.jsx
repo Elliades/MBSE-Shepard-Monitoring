@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { createActor } from 'xstate'
 import { pastureSentinelMachine } from '../stateMachine/pastureSentinelMachine'
 import useWebSocket from '../hooks/useWebSocket'
@@ -110,15 +110,35 @@ export const StateMachineProvider = ({ children }) => {
   }, [send, addLog, addNotification])
 
   // WebSocket connection (only if URL is provided)
-  const { connectionStatus, isConnected, sendMessage: wsSendMessage } = useWebSocket(
+  const {
+    connectionStatus,
+    isConnected,
+    sendMessage: wsSendMessage,
+    connect: connectSocket,
+    disconnect: disconnectSocket
+  } = useWebSocket(
     wsUrl,
     handleWebSocketMessage,
     {
-      autoConnect: false, // ❌ DISABLE AUTO-CONNECT - connect manually only
+      autoConnect: false,
       reconnectInterval: 3000,
       maxReconnectAttempts: 5
     }
   )
+
+  const connectWebSocket = useCallback((url) => {
+    const target = url?.trim()
+    if (!target) {
+      return
+    }
+    setWsUrl(target)
+    connectSocket(target)
+  }, [connectSocket])
+
+  const disconnectWebSocket = useCallback(() => {
+    disconnectSocket()
+    setWsUrl('')
+  }, [disconnectSocket])
 
   // Get current state path
   const getCurrentStatePath = useCallback(() => {
@@ -198,18 +218,23 @@ export const StateMachineProvider = ({ children }) => {
     }
   }, [connectionStatus, state.context?.connectionStatus])
 
+  const previousConnectionStatus = useRef(connectionStatus)
+
   // Log connection status changes
   useEffect(() => {
+    const previous = previousConnectionStatus.current
+    previousConnectionStatus.current = connectionStatus
+
     if (connectionStatus === 'connected') {
       addLog('success', 'WebSocket connection established')
       addNotification('success', 'Connected', 'WebSocket connection established')
     } else if (connectionStatus === 'error') {
       addLog('error', 'WebSocket connection error')
       addNotification('error', 'Connection Error', 'Failed to connect to WebSocket')
-    } else if (connectionStatus === 'disconnected' && wsUrl) {
+    } else if (connectionStatus === 'disconnected' && previous === 'connected') {
       addLog('warning', 'WebSocket disconnected')
     }
-  }, [connectionStatus, addLog, addNotification, wsUrl])
+  }, [connectionStatus, addLog, addNotification])
 
   const value = {
     state,
@@ -230,7 +255,9 @@ export const StateMachineProvider = ({ children }) => {
     wsUrl,
     setWsUrl,
     isConnected,
-    wsSendMessage
+    wsSendMessage,
+    connectWebSocket,
+    disconnectWebSocket
   }
 
   return (
