@@ -34,3 +34,26 @@ git push origin 0-DEV-CHAK
 ## Commit de référence
 
 `329cc535` — feat(mcp): add MCPFeature server and model/simulation tools
+
+---
+
+# RelayFeature (connexion distante Shepard)
+
+Package : `omf-public-features/.../relay/`  
+Classe principale : **`RelayFeature extends AFeature`**.
+
+MagicDraw ouvre une WebSocket **sortante** vers `wss://…/relay/md?session=CODE`, affiche le lien navigateur `https://…/?session=CODE`, et relaie les signaux de simulation (sans MCP).
+
+## Intégration OMF
+
+1. Copier le dossier `relay/` à côté de `mcp/` dans `omf-public-features`.
+2. Ajouter dans `build.gradle` : `implementation 'org.java-websocket:Java-WebSocket:1.5.6'`
+3. Mettre à jour `MCPSimulationBridge.java` (observers `addSignalObserver` / `removeSignalObserver`).
+4. Enregistrer dans le plugin : `new RelayFeature()` (en plus ou à la place de MCP selon le besoin).
+
+Options d’environnement :
+
+- **Relay WebSocket URL** — défaut `wss://shepherd.chaos-art.fr/relay/md`
+- **Front base URL** — défaut `https://shepherd.chaos-art.fr/`
+
+Au démarrage, la console OMF affiche le code de session et l’URL à ouvrir dans le navigateur.

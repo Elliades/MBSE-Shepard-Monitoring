@@ -47,20 +47,23 @@ Confirm: `curl -sf http://127.0.0.1:3070/api/services` lists **MBSE Shepard Moni
 
 ## Named URL (Tailscale, no port)
 
-Add `sheppard` in `c:\workspace\Q-Home\deploy\ts-apps-map.yaml` (port **3130**), then:
+Add `shepherd` in `c:\workspace\Q-Home\deploy\ts-apps-map.yaml` (port **3130**), then:
 
 ```powershell
 cd C:\workspace\Q-Home
 ./deploy/enable-ts-apps-proxy.ps1 -SkipDns
 ./deploy/verify-ts-apps-proxy.ps1
-curl -sf http://sheppard.apps.chaos-art.fr/api/health
+curl -sf http://shepherd.apps.chaos-art.fr/api/health
 ```
 
-Set `urlTailscale: http://sheppard.apps.chaos-art.fr` in `extras.yaml` when registering the catalog.
+Public HTTPS (Caddy): `./deploy/enable-shepherd-public.ps1` in Q-Home → `https://shepherd.chaos-art.fr/`
+
+Set `urlTailscale: http://shepherd.apps.chaos-art.fr` and public URL in `extras.yaml` when registering the catalog.
 
 Report:
 
 - LAN: `http://apps:3130/`
-- Named: `http://sheppard.apps.chaos-art.fr/`
+- Public: `https://shepherd.chaos-art.fr/`
+- Named (Tailscale): `http://shepherd.apps.chaos-art.fr/`
 - Tailscale (direct): `http://100.93.92.42:3130/`
 - Catalog: `http://health.apps.chaos-art.fr/` · `http://apps:3070/`
