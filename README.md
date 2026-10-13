@@ -109,10 +109,33 @@ The application implements the state machine defined in `state_machine.md`:
 - **CSS3**: Styling with animations
 - **WebSocket**: Real-time communication
 
+### OMF plugin (simulation bridge)
+
+The MagicDraw / Cameo plugin sources live in [`OMF_Private/`](OMF_Private/) as a Git submodule ([Elliades/OMF-Sandbox](https://github.com/Elliades/OMF-Sandbox)). After cloning this repository, run:
+
+```bash
+git submodule update --init --recursive
+```
+
+Le POC signaux (branche `feature/pasture-sentinel-alh-poc`) doit être **poussé sur OMF-Sandbox** pour apparaître sur GitHub :
+
+```bash
+cd OMF_Private
+git push -u sandbox feature/pasture-sentinel-alh-poc:main
+# remote sandbox = git@github.com:Elliades/OMF-Sandbox.git
+```
+
+Si le dépôt sandbox est vide ou privé sans accès, `git submodule update` échouera tant que `main` ne contient pas le commit référencé par le monitoring.
+
+Simulation signal interception (`SimulationExecutionListener`, WebSocket publisher) is implemented in that tree, not in the React app. POC branch **`feature/pasture-sentinel-alh-poc`** (package `features/pasturesentinel`) : listener passif + WebSocket `ws://127.0.0.1:8080`, messages `{"signal":"<nom>"}`. Voir `OMF_Private/omf-example-plugin/.../pasturesentinel/README.md`.
+
+Launch MagicDraw from `OMF_Private` with Gradle `:omf-example-plugin:runPlugin` when a local MCSE/CST install is configured.
+
 ### Project Structure
 
 ```
 mbse-sheppard/
+├── OMF_Private/             # OMF plugin submodule (MagicDraw / CST)
 ├── src/
 │   ├── components/          # React components
 │   │   ├── Drone.jsx       # Drone visualization

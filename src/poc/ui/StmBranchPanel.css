@@ -1,0 +1,207 @@
+.stm-branch-panel {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.75rem 1rem 1rem;
+  color: #fff;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  --scroll-fade: rgba(45, 45, 95, 0.88);
+}
+
+.stm-branch-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.stm-branch-hint {
+  margin: 0.35rem 0 0.65rem;
+  font-size: 0.72rem;
+  opacity: 0.85;
+  line-height: 1.35;
+}
+
+.stm-connect {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0.55rem;
+}
+
+.stm-connect-input {
+  flex: 1 1 10rem;
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+}
+
+.stm-connect-status {
+  font-size: 0.72rem;
+  opacity: 0.9;
+}
+
+.stm-branch-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.stm-toolbar-btn {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(37, 99, 235, 0.85);
+  color: white;
+  cursor: pointer;
+}
+
+.stm-toolbar-btn--muted {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.stm-lanes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.stm-lane-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+}
+
+.stm-lane-track {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.2rem;
+  overflow: visible;
+}
+
+.stm-lane-connector {
+  width: 2px;
+  height: 8px;
+  margin-left: 0.7rem;
+  background: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.stm-node {
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 0.72rem;
+  max-width: 100%;
+}
+
+.stm-node-label {
+  display: block;
+  line-height: 1.2;
+}
+
+.stm-node--active {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.2);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.35);
+}
+
+.stm-node--past {
+  opacity: 0.55;
+}
+
+.stm-active-block {
+  flex-shrink: 0;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.stm-active-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.65rem;
+}
+
+.stm-active-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stm-active-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.stm-outgoing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.stm-outgoing-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.stm-edge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  text-align: left;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid rgba(147, 197, 253, 0.45);
+  background: rgba(30, 58, 138, 0.45);
+  color: #e0f2fe;
+  cursor: pointer;
+  font-size: 0.7rem;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.stm-edge:hover {
+  background: rgba(37, 99, 235, 0.55);
+  transform: translateX(2px);
+}
+
+.stm-edge-signal {
+  font-weight: 600;
+  color: #93c5fd;
+}
+
+.stm-edge-arrow {
+  opacity: 0.6;
+}
+
+.stm-edge-target {
+  opacity: 0.9;
+}
+
+.stm-no-edges {
+  margin: 0;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}

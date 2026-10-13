@@ -1,0 +1,1240 @@
+From 329cc535533223500df7178582f9f5e7b9b20232 Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Fri, 25 Sep 2026 16:00:34 +0000
+Subject: [PATCH] feat(mcp): add MCPFeature server and model/simulation tools
+
+---
+ .../omf_example_plugin/OMFExamplePlugin.java  |   2 +
+ omf-public-features/build.gradle              |   1 +
+ .../mcp/MCPElementResolver.java               |  78 +++++
+ .../mcp/MCPEnvOptionsHelper.java              |  39 +++
+ .../omf_public_features/mcp/MCPException.java |  15 +
+ .../omf_public_features/mcp/MCPFeature.java   |  83 ++++++
+ .../mcp/MCPJsonResponses.java                 |  41 +++
+ .../mcp/MCPJsonRpcServlet.java                |  77 +++++
+ .../mcp/MCPModelToolService.java              | 281 ++++++++++++++++++
+ .../mcp/MCPProtocolService.java               |  72 +++++
+ .../omf_public_features/mcp/MCPServer.java    |  59 ++++
+ .../mcp/MCPSimulationBridge.java              | 176 +++++++++++
+ .../mcp/MCPToolDefinition.java                |  28 ++
+ .../mcp/MCPToolExecutor.java                  |  73 +++++
+ .../mcp/MCPToolRegistry.java                  |  71 +++++
+ 15 files changed, 1096 insertions(+)
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPElementResolver.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPEnvOptionsHelper.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPException.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPFeature.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPJsonResponses.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPJsonRpcServlet.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPModelToolService.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPProtocolService.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPServer.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPSimulationBridge.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolDefinition.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolExecutor.java
+ create mode 100644 omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolRegistry.java
+
+diff --git a/omf-example-plugin/src/main/java/com/samares_engineering/omf/omf_example_plugin/OMFExamplePlugin.java b/omf-example-plugin/src/main/java/com/samares_engineering/omf/omf_example_plugin/OMFExamplePlugin.java
+index ced26f4c..7d891653 100644
+--- a/omf-example-plugin/src/main/java/com/samares_engineering/omf/omf_example_plugin/OMFExamplePlugin.java
++++ b/omf-example-plugin/src/main/java/com/samares_engineering/omf/omf_example_plugin/OMFExamplePlugin.java
+@@ -27,6 +27,7 @@ import com.samares_engineering.omf.omf_example_plugin.features.sysmlv2_explo.Sys
+ import com.samares_engineering.omf.omf_public_features.activablefeatureoption.FeatureActivationFromOptionFeature;
+ import com.samares_engineering.omf.omf_public_features.clonefeature.CloneElementFeature;
+ import com.samares_engineering.omf.omf_public_features.featuredeactivation.FeaturesDeactivationFeature;
++import com.samares_engineering.omf.omf_public_features.mcp.MCPFeature;
+ import com.samares_engineering.omf.omf_public_features.partblock_hyperttext.HyperLinkFeature;
+ import com.samares_engineering.omf.smart_private.privatefeaturelibrary.patterncreation.PatternCreationFeature;
+ 
+@@ -49,6 +50,7 @@ public class OMFExamplePlugin extends AOMFPlugin {
+                 //USEFUL
+                 new EnhancedDisplayFeature(),
+                 new HyperLinkFeature(),
++                new MCPFeature(),
+ //                new LockSafeFeature(),
+                 new DerivedPropertyExample(),
+   //              new APIServerFeature("http://localhost", 9850),
+diff --git a/omf-public-features/build.gradle b/omf-public-features/build.gradle
+index 526b98f4..613b788f 100644
+--- a/omf-public-features/build.gradle
++++ b/omf-public-features/build.gradle
+@@ -28,4 +28,5 @@ dependencies {
+     compileOnly fileTree(dir: 'build/install/plugins', include: ['**/*.jar'])
+ 
+     implementation 'com.squareup:javapoet:1.13.0'
++    implementation 'org.json:json:20230227'
+ }
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPElementResolver.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPElementResolver.java
+new file mode 100644
+index 00000000..8b1d0c3b
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPElementResolver.java
+@@ -0,0 +1,78 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import com.nomagic.magicdraw.core.Project;
++import com.nomagic.uml2.ext.magicdraw.classes.mdkernel.Element;
++import com.samares_engineering.omf.omf_core_framework.utils.OMFUtils;
++import org.json.JSONArray;
++import org.json.JSONObject;
++
++import java.util.ArrayList;
++import java.util.List;
++
++public final class MCPElementResolver {
++
++    private MCPElementResolver() {
++    }
++
++    public static Project requireProject() {
++        Project project = OMFUtils.getProject();
++        if (project == null || project.isClosed()) {
++            throw new MCPException("NO_PROJECT", "No open MagicDraw project");
++        }
++        return project;
++    }
++
++    public static Element requireElement(String elementId) {
++        Element element = resolveElement(elementId);
++        if (element == null) {
++            throw new MCPException("ELEMENT_NOT_FOUND", "Element not found: " + elementId);
++        }
++        return element;
++    }
++
++    public static Element resolveElement(String elementId) {
++        if (elementId == null || elementId.isBlank()) {
++            return null;
++        }
++        return requireProject().getElementByID(elementId);
++    }
++
++    public static JSONObject elementSummary(Element element) {
++        JSONObject json = new JSONObject();
++        json.put("id", element.getID());
++        json.put("name", element.getHumanName());
++        json.put("qualifiedName", element.getQualifiedName());
++        json.put("metaClass", element.getClassType().getName());
++        return json;
++    }
++
++    public static JSONArray findElements(String name, String type) {
++        Project project = requireProject();
++        List<Element> matches = new ArrayList<>();
++        collectElements(project.getPrimaryModel(), matches);
++
++        JSONArray array = new JSONArray();
++        for (Element element : matches) {
++            if (name != null && !name.isBlank() && !element.getHumanName().contains(name)) {
++                continue;
++            }
++            if (type != null && !type.isBlank() && !element.getClassType().getName().contains(type)) {
++                continue;
++            }
++            array.put(elementSummary(element));
++        }
++        return array;
++    }
++
++    private static void collectElements(Element root, List<Element> out) {
++        if (root == null) {
++            return;
++        }
++        out.add(root);
++        if (root.getOwnedElement() != null) {
++            for (Element child : root.getOwnedElement()) {
++                collectElements(child, out);
++            }
++        }
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPEnvOptionsHelper.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPEnvOptionsHelper.java
+new file mode 100644
+index 00000000..ddd67f59
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPEnvOptionsHelper.java
+@@ -0,0 +1,39 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import com.nomagic.magicdraw.properties.IntegerProperty;
++import com.samares_engineering.omf.omf_core_framework.feature.EnvOptionsHelper;
++import com.samares_engineering.omf.omf_core_framework.feature.OMFFeature;
++import com.samares_engineering.omf.omf_core_framework.feature.registrables.options.option.Option;
++import com.samares_engineering.omf.omf_core_framework.feature.registrables.options.option.OptionImpl;
++import com.samares_engineering.omf.omf_core_framework.feature.registrables.options.option.OptionKind;
++
++import java.util.List;
++
++public class MCPEnvOptionsHelper extends EnvOptionsHelper {
++
++    public static final String MCP_CONFIGURATION_GROUP = "MCP Server configuration";
++    public static final String MCP_SERVER_PORT = "MCP Server Port (default 9851)";
++
++    public MCPEnvOptionsHelper(OMFFeature feature) {
++        super(feature);
++    }
++
++    public List<Option> getAllOptions() {
++        OptionImpl portOption = new OptionImpl(
++                new IntegerProperty(MCP_SERVER_PORT, MCPFeature.DEFAULT_PORT),
++                MCP_CONFIGURATION_GROUP,
++                getFeature().getPlugin().getEnvironmentOptionsGroup()
++                        .orElseThrow(() -> new IllegalStateException("No environment options group for plugin")),
++                OptionKind.Environment
++        );
++        return List.of(portOption);
++    }
++
++    public int getServerPort() {
++        Object value = getPropertyByName(MCP_SERVER_PORT).getValue();
++        if (value instanceof Number) {
++            return ((Number) value).intValue();
++        }
++        return MCPFeature.DEFAULT_PORT;
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPException.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPException.java
+new file mode 100644
+index 00000000..e313a4bb
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPException.java
+@@ -0,0 +1,15 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++public class MCPException extends RuntimeException {
++
++    private final String code;
++
++    public MCPException(String code, String message) {
++        super(message);
++        this.code = code;
++    }
++
++    public String getCode() {
++        return code;
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPFeature.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPFeature.java
+new file mode 100644
+index 00000000..191e0a9f
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPFeature.java
+@@ -0,0 +1,83 @@
++/*******************************************************************************
++ * @copyright Copyright (c) 2022-2026 Samares-Engineering
++ * @Licence: EPL 2.0
++ ******************************************************************************/
++
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import com.samares_engineering.omf.omf_core_framework.feature.AFeature;
++import com.samares_engineering.omf.omf_core_framework.feature.EnvOptionsHelper;
++import com.samares_engineering.omf.omf_core_framework.feature.registrables.actions.UIAction;
++import com.samares_engineering.omf.omf_core_framework.feature.registrables.hooks.base.Hook;
++import com.samares_engineering.omf.omf_core_framework.feature.registrables.liveactions.liveaction_engine.LiveActionEngine;
++import com.samares_engineering.omf.omf_core_framework.feature.registrables.options.option.Option;
++
++import java.util.Collections;
++import java.util.List;
++
++/**
++ * Official OMF feature exposing a local MCP (JSON-RPC) server for model and simulation automation.
++ */
++public class MCPFeature extends AFeature {
++
++    public static final int DEFAULT_PORT = 9851;
++
++    private MCPEnvOptionsHelper envOptionsHelper;
++    private MCPServer mcpServer;
++
++    public MCPFeature() {
++        super("MCP Feature");
++    }
++
++    @Override
++    protected EnvOptionsHelper initEnvOptionsHelper() {
++        envOptionsHelper = new MCPEnvOptionsHelper(this);
++        return envOptionsHelper;
++    }
++
++    @Override
++    protected List<UIAction> initFeatureActions() {
++        return Collections.emptyList();
++    }
++
++    @Override
++    protected List<LiveActionEngine> initLiveActions() {
++        return Collections.emptyList();
++    }
++
++    @Override
++    protected List<LiveActionEngine> initProjectOnlyLiveActions() {
++        return Collections.emptyList();
++    }
++
++    @Override
++    protected List<Option> initOptions() {
++        return envOptionsHelper.getAllOptions();
++    }
++
++    @Override
++    protected List<Hook> initLifeCycleHooks() {
++        return Collections.emptyList();
++    }
++
++    @Override
++    public void onRegistering() {
++        int port = envOptionsHelper.getServerPort();
++        mcpServer = new MCPServer(this);
++        mcpServer.start(port);
++        MCPSimulationBridge.registerPassiveListener();
++    }
++
++    @Override
++    public void onUnregistering() {
++        MCPSimulationBridge.unregisterPassiveListener();
++        if (mcpServer != null) {
++            mcpServer.stop();
++            mcpServer = null;
++        }
++    }
++
++    public MCPEnvOptionsHelper getMcpEnvOptionsHelper() {
++        return envOptionsHelper;
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPJsonResponses.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPJsonResponses.java
+new file mode 100644
+index 00000000..80d59de9
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPJsonResponses.java
+@@ -0,0 +1,41 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import org.json.JSONObject;
++
++public final class MCPJsonResponses {
++
++    private MCPJsonResponses() {
++    }
++
++    public static JSONObject success(Object id, JSONObject result) {
++        JSONObject response = new JSONObject();
++        if (id != null && id != JSONObject.NULL) {
++            response.put("jsonrpc", "2.0");
++            response.put("id", id);
++        }
++        response.put("result", result);
++        return response;
++    }
++
++    public static JSONObject error(Object id, int code, String message) {
++        JSONObject response = new JSONObject();
++        response.put("jsonrpc", "2.0");
++        if (id != null && id != JSONObject.NULL) {
++            response.put("id", id);
++        }
++        JSONObject error = new JSONObject();
++        error.put("code", code);
++        error.put("message", message);
++        response.put("error", error);
++        return response;
++    }
++
++    public static JSONObject toolResult(boolean ok, JSONObject payload) {
++        JSONObject result = new JSONObject();
++        result.put("content", new org.json.JSONArray().put(new JSONObject()
++                .put("type", "text")
++                .put("text", payload.toString())));
++        result.put("isError", !ok);
++        return result;
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPJsonRpcServlet.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPJsonRpcServlet.java
+new file mode 100644
+index 00000000..c462bfa8
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPJsonRpcServlet.java
+@@ -0,0 +1,77 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import org.json.JSONArray;
++import org.json.JSONObject;
++
++import javax.servlet.ServletException;
++import javax.servlet.http.HttpServlet;
++import javax.servlet.http.HttpServletRequest;
++import javax.servlet.http.HttpServletResponse;
++import java.io.BufferedReader;
++import java.io.IOException;
++import java.io.PrintWriter;
++import java.nio.charset.StandardCharsets;
++import java.util.stream.Collectors;
++
++public class MCPJsonRpcServlet extends HttpServlet {
++
++    private final MCPProtocolService protocolService;
++
++    public MCPJsonRpcServlet(MCPFeature feature) {
++        this.protocolService = new MCPProtocolService(feature);
++    }
++
++    @Override
++    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) {
++        addCors(resp);
++        resp.setStatus(HttpServletResponse.SC_OK);
++    }
++
++    @Override
++    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
++        addCors(resp);
++        resp.setContentType("application/json;charset=utf-8");
++        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
++
++        String body;
++        try (BufferedReader reader = req.getReader()) {
++            body = reader.lines().collect(Collectors.joining());
++        }
++
++        JSONObject responseJson;
++        try {
++            JSONObject requestJson = body.isBlank() ? new JSONObject() : new JSONObject(body);
++            responseJson = protocolService.handle(requestJson);
++        } catch (Exception e) {
++            responseJson = MCPJsonResponses.error(null, -32603, e.getMessage());
++        }
++
++        try (PrintWriter writer = resp.getWriter()) {
++            writer.write(responseJson.toString());
++        }
++    }
++
++    @Override
++    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
++        addCors(resp);
++        resp.setContentType("application/json;charset=utf-8");
++        JSONObject info = new JSONObject();
++        info.put("name", "OMF MCP Feature");
++        info.put("transport", "http+json-rpc");
++        info.put("endpoint", "POST /");
++        JSONArray tools = new JSONArray();
++        for (MCPToolDefinition tool : MCPToolRegistry.definitions()) {
++            tools.put(tool.toListEntry());
++        }
++        info.put("tools", tools);
++        try (PrintWriter writer = resp.getWriter()) {
++            writer.write(info.toString());
++        }
++    }
++
++    private static void addCors(HttpServletResponse resp) {
++        resp.setHeader("Access-Control-Allow-Origin", "*");
++        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
++        resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPModelToolService.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPModelToolService.java
+new file mode 100644
+index 00000000..5374119c
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPModelToolService.java
+@@ -0,0 +1,281 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import com.nomagic.magicdraw.core.Application;
++import com.nomagic.magicdraw.core.Project;
++import com.nomagic.magicdraw.openapi.uml.PresentationElementsManager;
++import com.nomagic.magicdraw.openapi.uml.ReadOnlyElementException;
++import com.nomagic.magicdraw.openapi.uml.SessionManager;
++import com.nomagic.magicdraw.uml.symbols.DiagramPresentationElement;
++import com.nomagic.magicdraw.uml.symbols.PresentationElement;
++import com.nomagic.uml2.ext.magicdraw.classes.mdkernel.*;
++import com.nomagic.uml2.ext.magicdraw.commonbehaviors.mdcommunications.Signal;
++import com.nomagic.uml2.ext.magicdraw.compositestructures.mdinternalstructures.Connector;
++import com.nomagic.uml2.ext.magicdraw.compositestructures.mdports.Port;
++import com.nomagic.uml2.ext.magicdraw.statemachines.mdbehaviorstatemachines.StateMachine;
++import com.samares_engineering.omf.omf_core_framework.errors.cancelsession.UndoManager;
++import com.samares_engineering.omf.omf_core_framework.factory.SysMLFactory;
++import com.samares_engineering.omf.omf_core_framework.utils.utils.diagrams.DiagramUtils;
++import com.samares_engineering.omf.omf_core_framework.utils.utils.diagrams.LayoutManager;
++import org.json.JSONArray;
++import org.json.JSONObject;
++
++import java.awt.*;
++import java.util.Arrays;
++import java.util.List;
++
++public class MCPModelToolService {
++
++    private static final List<String> FACTORY_TYPES = Arrays.asList(
++            "Block", "Package", "ProxyPort", "PartProperty", "Requirement",
++            "InterfaceBlock", "ConstraintBlock", "Signal", "StateMachine"
++    );
++
++    public JSONObject getProject() {
++        Project project = MCPElementResolver.requireProject();
++        JSONObject json = new JSONObject();
++        json.put("ok", true);
++        json.put("name", project.getName());
++        json.put("file", project.getFileName());
++        json.put("dirty", project.isDirty());
++        return json;
++    }
++
++    public JSONObject getElement(JSONObject args) {
++        Element element = MCPElementResolver.requireElement(args.getString("elementId"));
++        JSONObject json = new JSONObject();
++        json.put("ok", true);
++        json.put("element", MCPElementResolver.elementSummary(element));
++        return json;
++    }
++
++    public JSONObject findElements(JSONObject args) {
++        String name = args.optString("name", null);
++        String type = args.optString("type", null);
++        JSONObject json = new JSONObject();
++        json.put("ok", true);
++        json.put("elements", MCPElementResolver.findElements(name, type));
++        return json;
++    }
++
++    public JSONObject factoryCreate(JSONObject args) {
++        String type = args.getString("type");
++        String name = args.getString("name");
++        if (!FACTORY_TYPES.contains(type)) {
++            throw new MCPException("UNSUPPORTED_TYPE",
++                    "Unsupported type '" + type + "'. Supported: " + FACTORY_TYPES);
++        }
++
++        Project project = MCPElementResolver.requireProject();
++        SysMLFactory factory = SysMLFactory.getInstance(project);
++        Element owner = resolveOwner(args.optString("ownerId", null), project);
++
++        Element created = createTypedElement(factory, type, owner);
++        created.setName(name);
++
++        JSONObject json = new JSONObject();
++        json.put("ok", true);
++        json.put("element", MCPElementResolver.elementSummary(created));
++        return json;
++    }
++
++    private Element resolveOwner(String ownerId, Project project) {
++        if (ownerId == null || ownerId.isBlank()) {
++            return project.getPrimaryModel();
++        }
++        Element owner = MCPElementResolver.resolveElement(ownerId);
++        if (owner == null) {
++            throw new MCPException("OWNER_NOT_FOUND", "Owner not found: " + ownerId);
++        }
++        return owner;
++    }
++
++    private Element createTypedElement(SysMLFactory factory, String type, Element owner) {
++        switch (type) {
++            case "Block":
++                return factory.createBlock(owner);
++            case "Package":
++                return factory.createPackage(owner);
++            case "ProxyPort":
++                return factory.createProxyPort(owner);
++            case "PartProperty":
++                return factory.createPartProperty(owner);
++            case "InterfaceBlock":
++                return factory.createInterfaceBlock(owner);
++            case "ConstraintBlock":
++                return factory.createConstraintBlock(owner);
++            case "Signal":
++                return factory.createSignal(owner);
++            case "StateMachine":
++                StateMachine stateMachine = factory.getMagicDrawFactory().createStateMachineInstance();
++                stateMachine.setOwner(owner);
++                return stateMachine;
++            case "Requirement":
++                return factory.createClass(owner);
++            default:
++                throw new MCPException("UNSUPPORTED_TYPE", type);
++        }
++    }
++
++    public JSONObject connect(JSONObject args) {
++        Element from = MCPElementResolver.requireElement(args.getString("fromId"));
++        Element to = MCPElementResolver.requireElement(args.getString("toId"));
++        String kind = args.optString("kind", "connector");
++
++        SysMLFactory factory = SysMLFactory.getInstance(MCPElementResolver.requireProject());
++        Element owner = from.getOwner() != null ? from.getOwner() : to.getOwner();
++        if (owner == null) {
++            throw new MCPException("CONNECT_FAILED", "Cannot resolve connector owner");
++        }
++
++        Element link;
++        if ("dependency".equalsIgnoreCase(kind)) {
++            Dependency dependency = factory.getMagicDrawFactory().createDependencyInstance();
++            dependency.getClient().add(from);
++            dependency.getSupplier().add(to);
++            dependency.setOwner(owner);
++            link = dependency;
++        } else if (from instanceof Port && to instanceof Port) {
++            link = factory.createConnectorBetweenPorts((Port) from, (Port) to, null, null, owner);
++        } else {
++            throw new MCPException("CONNECT_FAILED",
++                    "connector kind requires two ProxyPort ends; use kind=dependency otherwise");
++        }
++
++        JSONObject json = new JSONObject();
++        json.put("ok", true);
++        json.put("element", MCPElementResolver.elementSummary(link));
++        return json;
++    }
++
++    public JSONObject display(JSONObject args) {
++        Element element = MCPElementResolver.requireElement(args.getString("elementId"));
++        Diagram diagram = resolveDiagram(args.optString("diagramId", null));
++
++        DiagramPresentationElement diagramPe = DiagramUtils.getDiagram(diagram);
++        PresentationElementsManager manager = PresentationElementsManager.getInstance();
++        PresentationElement shape = findPresentationOnDiagram(diagramPe, element);
++        if (shape == null) {
++            try {
++                shape = manager.createShapeElement(element, diagramPe, true);
++            } catch (ReadOnlyElementException e) {
++                throw new MCPException("DISPLAY_FAILED", e.getMessage());
++            }
++        }
++
++        Project project = MCPElementResolver.requireProject();
++        project.setActiveDiagram(diagramPe);
++        Application.getInstance().getGUILog().log("MCP display: " + element.getHumanName());
++
++        JSONObject json = new JSONObject();
++        json.put("ok", true);
++        json.put("diagramId", diagram.getID());
++        json.put("presentationElementId", shape.getID());
++        return json;
++    }
++
++    private Diagram resolveDiagram(String diagramId) {
++        if (diagramId != null && !diagramId.isBlank()) {
++            Element element = MCPElementResolver.requireElement(diagramId);
++            if (!(element instanceof Diagram)) {
++                throw new MCPException("NOT_A_DIAGRAM", "Element is not a diagram: " + diagramId);
++            }
++            return (Diagram) element;
++        }
++        return DiagramUtils.getOpenedDiagram();
++    }
++
++    public JSONObject modifyLayout(JSONObject args) {
++        Diagram diagram = (Diagram) MCPElementResolver.requireElement(args.getString("diagramId"));
++        DiagramPresentationElement diagramPe = DiagramUtils.getDiagram(diagram);
++        PresentationElementsManager manager = PresentationElementsManager.getInstance();
++
++        JSONArray shapes = args.getJSONArray("shapes");
++        JSONArray updated = new JSONArray();
++        for (int i = 0; i < shapes.length(); i++) {
++            JSONObject shapeJson = shapes.getJSONObject(i);
++            Element element = MCPElementResolver.requireElement(shapeJson.getString("elementId"));
++            PresentationElement pe = findPresentationOnDiagram(diagramPe, element);
++            if (pe == null) {
++                throw new MCPException("SHAPE_NOT_FOUND", "No shape for element " + element.getID());
++            }
++            Rectangle bounds = new Rectangle(
++                    shapeJson.optInt("x", pe.getBounds().x),
++                    shapeJson.optInt("y", pe.getBounds().y),
++                    shapeJson.optInt("width", pe.getBounds().width),
++                    shapeJson.optInt("height", pe.getBounds().height)
++            );
++            try {
++                manager.reshapeShapeElement(pe, bounds);
++            } catch (ReadOnlyElementException e) {
++                throw new MCPException("LAYOUT_FAILED", e.getMessage());
++            }
++            updated.put(new JSONObject().put("presentationElementId", pe.getID()).put("elementId", element.getID()));
++        }
++
++        JSONObject json = new JSONObject();
++        json.put("ok", true);
++        json.put("updated", updated);
++        return json;
++    }
++
++    public JSONObject autolayout(JSONObject args) {
++        Diagram diagram = (Diagram) MCPElementResolver.requireElement(args.getString("diagramId"));
++        DiagramPresentationElement diagramPe = DiagramUtils.getDiagram(diagram);
++        new LayoutManager(diagramPe).applyQuickLayout();
++
++        JSONObject json = new JSONObject();
++        json.put("ok", true);
++        json.put("diagramId", diagram.getID());
++        return json;
++    }
++
++    public JSONObject undo(JSONObject args) {
++        int steps = args.optInt("steps", 1);
++        Project project = MCPElementResolver.requireProject();
++        for (int i = 0; i < steps; i++) {
++            if (SessionManager.getInstance().isSessionCreated(project)) {
++                throw new MCPException("SESSION_OPEN", "Close the modeling session before undo");
++            }
++            UndoManager.undo(project);
++        }
++        JSONObject json = new JSONObject();
++        json.put("ok", true);
++        json.put("steps", steps);
++        return json;
++    }
++
++    public JSONObject redo(JSONObject args) {
++        int steps = args.optInt("steps", 1);
++        Project project = MCPElementResolver.requireProject();
++        for (int i = 0; i < steps; i++) {
++            UndoManager.redo(project);
++        }
++        JSONObject json = new JSONObject();
++        json.put("ok", true);
++        json.put("steps", steps);
++        return json;
++    }
++
++    private PresentationElement findPresentationOnDiagram(DiagramPresentationElement diagramPe, Element element) {
++        for (PresentationElement candidate : diagramPe.getPresentationElements()) {
++            PresentationElement match = findPresentationRecursively(candidate, element);
++            if (match != null) {
++                return match;
++            }
++        }
++        return null;
++    }
++
++    private PresentationElement findPresentationRecursively(PresentationElement presentation, Element element) {
++        if (presentation.getElement() != null && presentation.getElement().equals(element)) {
++            return presentation;
++        }
++        for (PresentationElement child : presentation.getManipulatedPresentationElements()) {
++            PresentationElement match = findPresentationRecursively(child, element);
++            if (match != null) {
++                return match;
++            }
++        }
++        return null;
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPProtocolService.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPProtocolService.java
+new file mode 100644
+index 00000000..4bb2682a
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPProtocolService.java
+@@ -0,0 +1,72 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import org.json.JSONArray;
++import org.json.JSONObject;
++
++public class MCPProtocolService {
++
++    private final MCPFeature feature;
++    private final MCPToolExecutor toolExecutor;
++
++    public MCPProtocolService(MCPFeature feature) {
++        this.feature = feature;
++        this.toolExecutor = new MCPToolExecutor(feature);
++    }
++
++    public JSONObject handle(JSONObject request) {
++        Object id = request.has("id") ? request.get("id") : null;
++        String method = request.optString("method", "");
++
++        if (method.isEmpty()) {
++            return MCPJsonResponses.error(id, -32600, "Missing method");
++        }
++
++        JSONObject params = request.optJSONObject("params");
++        if (params == null) {
++            params = new JSONObject();
++        }
++
++        try {
++            switch (method) {
++                case "initialize":
++                    return MCPJsonResponses.success(id, initializeResult());
++                case "notifications/initialized":
++                    return MCPJsonResponses.success(id, new JSONObject());
++                case "tools/list":
++                    return MCPJsonResponses.success(id, toolsList());
++                case "tools/call":
++                    return MCPJsonResponses.success(id, toolExecutor.call(params));
++                default:
++                    return MCPJsonResponses.error(id, -32601, "Method not found: " + method);
++            }
++        } catch (MCPException e) {
++            JSONObject payload = new JSONObject();
++            payload.put("ok", false);
++            payload.put("code", e.getCode());
++            payload.put("error", e.getMessage());
++            return MCPJsonResponses.success(id, MCPJsonResponses.toolResult(false, payload));
++        } catch (Exception e) {
++            return MCPJsonResponses.error(id, -32603, e.getMessage());
++        }
++    }
++
++    private JSONObject initializeResult() {
++        JSONObject result = new JSONObject();
++        result.put("protocolVersion", "2024-11-05");
++        JSONObject capabilities = new JSONObject();
++        capabilities.put("tools", new JSONObject().put("listChanged", false));
++        result.put("capabilities", capabilities);
++        result.put("serverInfo", new JSONObject()
++                .put("name", "omf-mcp-feature")
++                .put("version", "1.0.0"));
++        return result;
++    }
++
++    private JSONObject toolsList() {
++        JSONArray tools = new JSONArray();
++        for (MCPToolDefinition definition : MCPToolRegistry.definitions()) {
++            tools.put(definition.toListEntry());
++        }
++        return new JSONObject().put("tools", tools);
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPServer.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPServer.java
+new file mode 100644
+index 00000000..0af876f7
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPServer.java
+@@ -0,0 +1,59 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import com.samares_engineering.omf.omf_core_framework.errormanagement2.exceptions.OMFCriticalException;
++import com.samares_engineering.omf.omf_core_framework.errormanagement2.logging.log.OMFLog;
++import org.eclipse.jetty.server.Server;
++import org.eclipse.jetty.server.ServerConnector;
++import org.eclipse.jetty.servlet.ServletContextHandler;
++import org.eclipse.jetty.servlet.ServletHolder;
++
++import java.net.BindException;
++
++import static com.samares_engineering.omf.omf_core_framework.errormanagement2.logging.log.OMFLogLevel.INFO;
++
++public class MCPServer {
++
++    private final MCPFeature feature;
++    private Server server;
++
++    public MCPServer(MCPFeature feature) {
++        this.feature = feature;
++    }
++
++    public void start(int port) {
++        try {
++            server = new Server();
++            ServerConnector connector = new ServerConnector(server);
++            connector.setHost("127.0.0.1");
++            connector.setPort(port);
++            server.addConnector(connector);
++
++            ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
++            context.setContextPath("/");
++            context.addServlet(new ServletHolder(new MCPJsonRpcServlet(feature)), "/*");
++            server.setHandler(context);
++
++            server.start();
++            new OMFLog().info("MCP server started on http://127.0.0.1:" + port)
++                    .logToUiConsole(INFO)
++                    .logToSystemConsole(INFO);
++        } catch (BindException bindException) {
++            throw new OMFCriticalException(
++                    "MCP server port " + port + " is already in use. Change MCP Server Port in environment options.",
++                    bindException);
++        } catch (Exception e) {
++            throw new OMFCriticalException("Failed to start MCP server on port " + port, e);
++        }
++    }
++
++    public void stop() {
++        if (server == null) {
++            return;
++        }
++        try {
++            server.stop();
++        } catch (Exception e) {
++            throw new OMFCriticalException("Failed to stop MCP server", e);
++        }
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPSimulationBridge.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPSimulationBridge.java
+new file mode 100644
+index 00000000..e1eced5f
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPSimulationBridge.java
+@@ -0,0 +1,176 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import com.nomagic.uml2.ext.magicdraw.classes.mdkernel.Element;
++import org.json.JSONArray;
++import org.json.JSONObject;
++
++import java.lang.reflect.InvocationHandler;
++import java.lang.reflect.Method;
++import java.lang.reflect.Proxy;
++import java.util.List;
++import java.util.concurrent.CopyOnWriteArrayList;
++
++public final class MCPSimulationBridge {
++
++    private static final List<JSONObject> OBSERVED_SIGNALS = new CopyOnWriteArrayList<>();
++    private static volatile String activeSessionId;
++    private static volatile Object registeredListener;
++    private static volatile boolean simulationApiPresent = detectSimulationApi();
++
++    private MCPSimulationBridge() {
++    }
++
++    private static boolean detectSimulationApi() {
++        try {
++            Class.forName("com.nomagic.magicdraw.simulation.SimulationManager");
++            return true;
++        } catch (ClassNotFoundException e) {
++            return false;
++        }
++    }
++
++    public static boolean isSimulationAvailable() {
++        return simulationApiPresent;
++    }
++
++    public static void registerPassiveListener() {
++        if (!simulationApiPresent || registeredListener != null) {
++            return;
++        }
++        try {
++            Class<?> listenerInterface = Class.forName(
++                    "com.nomagic.magicdraw.simulation.execution.SimulationExecutionListener");
++            Class<?> registryClass = Class.forName(
++                    "com.nomagic.magicdraw.simulation.execution.ExecutionListenerRegistry");
++
++            Object listener = Proxy.newProxyInstance(
++                    listenerInterface.getClassLoader(),
++                    new Class[]{listenerInterface},
++                    new SimulationListenerInvocationHandler());
++
++            Method register = registryClass.getMethod("registerSimulationListener", listenerInterface);
++            register.invoke(null, listener);
++            registeredListener = listener;
++        } catch (Exception ignored) {
++            simulationApiPresent = false;
++        }
++    }
++
++    public static void unregisterPassiveListener() {
++        if (!simulationApiPresent || registeredListener == null) {
++            return;
++        }
++        try {
++            Class<?> listenerInterface = Class.forName(
++                    "com.nomagic.magicdraw.simulation.execution.SimulationExecutionListener");
++            Class<?> registryClass = Class.forName(
++                    "com.nomagic.magicdraw.simulation.execution.ExecutionListenerRegistry");
++            Method unregister = registryClass.getMethod("unregisterSimulationListener", listenerInterface);
++            unregister.invoke(null, registeredListener);
++        } catch (Exception ignored) {
++            // best effort
++        } finally {
++            registeredListener = null;
++        }
++    }
++
++    public static JSONObject runSimulation(Element element) {
++        if (!simulationApiPresent) {
++            throw new MCPException("SIMULATION_UNAVAILABLE", "Cameo Simulation Toolkit is not available");
++        }
++        try {
++            Class<?> simulationManagerClass = Class.forName("com.nomagic.magicdraw.simulation.SimulationManager");
++            Object manager = simulationManagerClass.getMethod("getInstance").invoke(null);
++
++            Object session = invokeFirstMatching(manager,
++                    new String[]{"runSimulation", "execute", "startSimulation", "run"},
++                    new Class[]{Element.class},
++                    new Object[]{element});
++
++            if (session == null) {
++                throw new MCPException("SIMULATION_START_FAILED", "Could not start simulation for element " + element.getID());
++            }
++
++            activeSessionId = String.valueOf(session);
++            JSONObject json = new JSONObject();
++            json.put("ok", true);
++            json.put("sessionId", activeSessionId);
++            json.put("elementId", element.getID());
++            return json;
++        } catch (MCPException e) {
++            throw e;
++        } catch (Exception e) {
++            throw new MCPException("SIMULATION_START_FAILED", e.getMessage());
++        }
++    }
++
++    public static JSONObject simulationInfo() {
++        if (!simulationApiPresent) {
++            throw new MCPException("SIMULATION_UNAVAILABLE", "Cameo Simulation Toolkit is not available");
++        }
++        JSONObject json = new JSONObject();
++        json.put("ok", true);
++        json.put("sessionId", activeSessionId);
++        json.put("signals", new JSONArray(OBSERVED_SIGNALS));
++        json.put("availableSignals", readAvailableSignals());
++        return json;
++    }
++
++    private static JSONArray readAvailableSignals() {
++        try {
++            Class<?> engineClass = Class.forName("com.nomagic.magicdraw.simulation.engine.ExecutionEngine");
++            Object engine = engineClass.getMethod("getInstance").invoke(null);
++            Object signals = engineClass.getMethod("getAvailableSignals").invoke(engine);
++            if (signals instanceof List) {
++                return new JSONArray((List<?>) signals);
++            }
++        } catch (Exception ignored) {
++            // optional
++        }
++        return new JSONArray();
++    }
++
++    private static Object invokeFirstMatching(Object target, String[] names, Class<?>[] paramTypes, Object[] args)
++            throws Exception {
++        for (String name : names) {
++            try {
++                Method method = target.getClass().getMethod(name, paramTypes);
++                return method.invoke(target, args);
++            } catch (NoSuchMethodException ignored) {
++                // try next
++            }
++        }
++        return null;
++    }
++
++    private static final class SimulationListenerInvocationHandler implements InvocationHandler {
++        @Override
++        public Object invoke(Object proxy, Method method, Object[] args) {
++            if ("eventTriggered".equals(method.getName()) && args != null && args.length > 0) {
++                JSONObject signalEvent = new JSONObject();
++                signalEvent.put("name", extractSignalName(args[0]));
++                signalEvent.put("timestamp", System.currentTimeMillis());
++                OBSERVED_SIGNALS.add(signalEvent);
++            }
++            return null;
++        }
++
++        private String extractSignalName(Object signalInstance) {
++            if (signalInstance == null) {
++                return "";
++            }
++            for (String getter : new String[]{"getName", "getQualifiedName", "toString"}) {
++                try {
++                    Method method = signalInstance.getClass().getMethod(getter);
++                    Object value = method.invoke(signalInstance);
++                    if (value != null) {
++                        return value.toString();
++                    }
++                } catch (Exception ignored) {
++                    // try next getter
++                }
++            }
++            return signalInstance.toString();
++        }
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolDefinition.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolDefinition.java
+new file mode 100644
+index 00000000..75a44c59
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolDefinition.java
+@@ -0,0 +1,28 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import org.json.JSONObject;
++
++public class MCPToolDefinition {
++
++    private final String name;
++    private final String description;
++    private final JSONObject inputSchema;
++
++    public MCPToolDefinition(String name, String description, JSONObject inputSchema) {
++        this.name = name;
++        this.description = description;
++        this.inputSchema = inputSchema;
++    }
++
++    public String getName() {
++        return name;
++    }
++
++    public JSONObject toListEntry() {
++        JSONObject tool = new JSONObject();
++        tool.put("name", name);
++        tool.put("description", description);
++        tool.put("inputSchema", inputSchema);
++        return tool;
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolExecutor.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolExecutor.java
+new file mode 100644
+index 00000000..24b372fc
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolExecutor.java
+@@ -0,0 +1,73 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import com.samares_engineering.omf.omf_core_framework.errormanagement2.OMFBarrierExecutor;
++import com.samares_engineering.omf.omf_core_framework.errormanagement2.exceptions.OMFLogException;
++import org.json.JSONObject;
++
++public class MCPToolExecutor {
++
++    private final MCPFeature feature;
++    private final MCPModelToolService modelTools = new MCPModelToolService();
++
++    public MCPToolExecutor(MCPFeature feature) {
++        this.feature = feature;
++    }
++
++    public JSONObject call(JSONObject params) {
++        String name = params.getString("name");
++        JSONObject arguments = params.optJSONObject("arguments");
++        if (arguments == null) {
++            arguments = new JSONObject();
++        }
++
++        if (MCPToolRegistry.find(name).isEmpty()) {
++            throw new MCPException("UNKNOWN_TOOL", "Unknown tool: " + name);
++        }
++
++        JSONObject payload = executeTool(name, arguments);
++        boolean ok = payload.optBoolean("ok", false);
++        return MCPJsonResponses.toolResult(ok, payload);
++    }
++
++    private JSONObject executeTool(String name, JSONObject arguments) {
++        try {
++            return (JSONObject) OMFBarrierExecutor.executeInSessionWithinBarrier(() -> {
++                switch (name) {
++                    case "get_project":
++                        return modelTools.getProject();
++                    case "get_element":
++                        return modelTools.getElement(arguments);
++                    case "find_elements":
++                        return modelTools.findElements(arguments);
++                    case "factory_create":
++                        return modelTools.factoryCreate(arguments);
++                    case "connect":
++                        return modelTools.connect(arguments);
++                    case "display":
++                        return modelTools.display(arguments);
++                    case "modify_layout":
++                        return modelTools.modifyLayout(arguments);
++                    case "autolayout":
++                        return modelTools.autolayout(arguments);
++                    case "undo":
++                        return modelTools.undo(arguments);
++                    case "redo":
++                        return modelTools.redo(arguments);
++                    case "run_simulation":
++                        return MCPSimulationBridge.runSimulation(
++                                MCPElementResolver.requireElement(arguments.getString("elementId")));
++                    case "simulation_info":
++                        return MCPSimulationBridge.simulationInfo();
++                    default:
++                        throw new MCPException("UNKNOWN_TOOL", name);
++                }
++            }, feature);
++        } catch (OMFLogException e) {
++            JSONObject error = new JSONObject();
++            error.put("ok", false);
++            error.put("code", "OMF_ERROR");
++            error.put("error", e.getMessage());
++            return error;
++        }
++    }
++}
+diff --git a/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolRegistry.java b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolRegistry.java
+new file mode 100644
+index 00000000..3b68a72a
+--- /dev/null
++++ b/omf-public-features/src/main/java/com/samares_engineering/omf/omf_public_features/mcp/MCPToolRegistry.java
+@@ -0,0 +1,71 @@
++package com.samares_engineering.omf.omf_public_features.mcp;
++
++import org.json.JSONObject;
++
++import java.util.Arrays;
++import java.util.List;
++import java.util.Optional;
++
++public final class MCPToolRegistry {
++
++    private MCPToolRegistry() {
++    }
++
++    public static List<MCPToolDefinition> definitions() {
++        return Arrays.asList(
++                tool("get_project", "Return the active MagicDraw project summary.", objectSchema()),
++                tool("get_element", "Return one model element by id.", requiredProps("elementId")),
++                tool("find_elements", "Find elements by optional name and metaclass name.", optionalProps("name", "type")),
++                tool("factory_create", "Create a SysML/UML element (Block, Package, ProxyPort, PartProperty, Requirement, InterfaceBlock, ConstraintBlock, Signal, StateMachine).",
++                        requiredProps("type", "name").put("ownerId", stringProperty("Optional owner element id"))),
++                tool("connect", "Connect two model ends with a connector or dependency.", requiredProps("fromId", "toId")
++                        .put("kind", stringProperty("connector or dependency (default connector)"))),
++                tool("display", "Show an element on a diagram (active diagram if diagramId omitted).",
++                        requiredProps("elementId").put("diagramId", stringProperty("Optional diagram id"))),
++                tool("modify_layout", "Set bounds for shapes on a diagram.",
++                        requiredProps("diagramId", "shapes")),
++                tool("autolayout", "Run MagicDraw auto-layout on a diagram.", requiredProps("diagramId")),
++                tool("undo", "Undo command history steps.", optionalProps("steps")),
++                tool("redo", "Redo command history steps.", optionalProps("steps")),
++                tool("run_simulation", "Start Cameo simulation for a model element.", requiredProps("elementId")),
++                tool("simulation_info", "Read simulation session status and observed signals.", objectSchema())
++        );
++    }
++
++    public static Optional<MCPToolDefinition> find(String name) {
++        return definitions().stream().filter(d -> d.getName().equals(name)).findFirst();
++    }
++
++    private static MCPToolDefinition tool(String name, String description, JSONObject schema) {
++        return new MCPToolDefinition(name, description, schema);
++    }
++
++    private static JSONObject objectSchema() {
++        return new JSONObject().put("type", "object").put("properties", new JSONObject());
++    }
++
++    private static JSONObject requiredProps(String... required) {
++        JSONObject schema = objectSchema();
++        JSONObject properties = new JSONObject();
++        for (String key : required) {
++            properties.put(key, stringProperty(key));
++        }
++        schema.put("properties", properties);
++        schema.put("required", required);
++        return schema;
++    }
++
++    private static JSONObject optionalProps(String... keys) {
++        JSONObject schema = objectSchema();
++        JSONObject properties = new JSONObject();
++        for (String key : keys) {
++            properties.put(key, stringProperty(key));
++        }
++        schema.put("properties", properties);
++        return schema;
++    }
++
++    private static JSONObject stringProperty(String description) {
++        return new JSONObject().put("type", "string").put("description", description);
++    }
++}
+-- 
+2.43.0
+
